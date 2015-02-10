@@ -1,0 +1,18 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="hu.sandorfehervari.analogdisplayreader" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
+    <name>Analog Display Reader</name>
+    <description>
+        An application which is able to parse analog display data from a picture.
+    </description>
+    <author email="h952649@stud.u-szeged.hu">
+        Sandor Fehervari
+    </author>
+    <content src="index.html" />
+    <access origin="*" />
+    <feature name="StatusBar">
+        <param name="ios-package" value="CDVStatusBar" onload="true" />
+    </feature>
+    <feature name="DisplayDetector">
+        <param name="ios-package" value="DisplayDetector"  onload="true"/>
+    </feature>
+</widget>

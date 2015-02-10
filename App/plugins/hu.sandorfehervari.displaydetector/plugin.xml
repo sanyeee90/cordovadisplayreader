@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+    <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+            id="hu.sandorfehervari.displaydetector" version="0.2.3">
+        <name>DisplayReader</name>
+        <description>Analogue display detection library</description>
+        <license>Apache 2.0</license>
+        <keywords>cordova,analogue,display,detection</keywords>
+        <js-module src="www/detector.js" name="detector">
+            <clobbers target="cordova.plugins.DisplayDetector" />
+        </js-module>
+        <platform name="ios">
+            <config-file target="config.xml" parent="/*">
+                <feature name="DisplayDetector">
+                    <param name="ios-package" value="DisplayDetector"/>
+                </feature>
+            </config-file>
+            <header-file src="src/ios/DisplayDetector.h" />
+            <source-file src="src/ios/DisplayDetector.m" />
+        </platform>
+    </plugin>
