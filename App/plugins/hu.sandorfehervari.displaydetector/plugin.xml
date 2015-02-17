@@ -14,7 +14,35 @@
                     <param name="ios-package" value="DisplayDetector"/>
                 </feature>
             </config-file>
+            <framework src="frameworks/opencv2.framework" custom="true"/>
+            <framework src="Accelerate.framework"/>
+            <framework src="AssetsLibrary.framework"/>
+
+            <framework src="AVFoundation.framework"/>
+            <framework src="CoreGraphics.framework"/>
+            <framework src="CoreImage.framework"/>
+            <framework src="CoreMedia.framework"/>
+            <framework src="CoreVideo.framework"/>
+            <framework src="QuartzCore.framework"/>
+            <framework src="UIKit.framework"/>
+            <framework src="Foundation.framework"/>
+
+            <framework src="libstdc++.dylib"/>
+
+            <header-file src="src/ios/AngleDetector.h" />
+            <source-file src="src/ios/AngleDetector.cpp" />
+            <header-file src="src/ios/DetectorAlgorithm.h" />
+            <header-file src="src/ios/FrequencyDetector.h" />
+            <source-file src="src/ios/FrequencyDetector.cpp" />
             <header-file src="src/ios/DisplayDetector.h" />
             <source-file src="src/ios/DisplayDetector.m" />
+            <header-file src="src/ios/line.h" />
+            <source-file src="src/ios/line.cpp" />
+            <header-file src="src/ios/Preprocess.h" />
+            <source-file src="src/ios/Preprocess.cpp" />
+            <header-file src="src/ios/ScaleDetector.h" />
+            <source-file src="src/ios/ScaleDetector.mm" />
+            <header-file src="src/ios/Yin.h" />
+            <source-file src="src/ios/Yin.c" />
         </platform>
     </plugin>

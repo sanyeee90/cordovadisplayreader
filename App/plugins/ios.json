@@ -49,13 +49,19 @@
             },
             "framework": {
                 "parents": {
-                    "ImageIO.framework": [
+                    "Accelerate.framework": [
                         {
-                            "xml": "true",
+                            "xml": "false",
                             "count": 1
                         }
                     ],
-                    "CoreLocation.framework": [
+                    "AssetsLibrary.framework": [
+                        {
+                            "xml": "false",
+                            "count": 2
+                        }
+                    ],
+                    "AVFoundation.framework": [
                         {
                             "xml": "false",
                             "count": 1
@@ -64,10 +70,58 @@
                     "CoreGraphics.framework": [
                         {
                             "xml": "false",
-                            "count": 2
+                            "count": 3
                         }
                     ],
-                    "AssetsLibrary.framework": [
+                    "CoreImage.framework": [
+                        {
+                            "xml": "false",
+                            "count": 1
+                        }
+                    ],
+                    "CoreMedia.framework": [
+                        {
+                            "xml": "false",
+                            "count": 1
+                        }
+                    ],
+                    "CoreVideo.framework": [
+                        {
+                            "xml": "false",
+                            "count": 1
+                        }
+                    ],
+                    "QuartzCore.framework": [
+                        {
+                            "xml": "false",
+                            "count": 1
+                        }
+                    ],
+                    "UIKit.framework": [
+                        {
+                            "xml": "false",
+                            "count": 1
+                        }
+                    ],
+                    "Foundation.framework": [
+                        {
+                            "xml": "false",
+                            "count": 1
+                        }
+                    ],
+                    "libstdc++.dylib": [
+                        {
+                            "xml": "false",
+                            "count": 1
+                        }
+                    ],
+                    "ImageIO.framework": [
+                        {
+                            "xml": "true",
+                            "count": 1
+                        }
+                    ],
+                    "CoreLocation.framework": [
                         {
                             "xml": "false",
                             "count": 1

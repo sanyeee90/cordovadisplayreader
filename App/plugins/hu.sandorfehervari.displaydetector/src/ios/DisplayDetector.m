@@ -7,7 +7,7 @@
 //
 
 #import "DisplayDetector.h"
-
+#import "ScaleDetector.h"
 @implementation DisplayDetector
 
 - (void) cordovaGetScaleAngle:(CDVInvokedUrlCommand *)command{
@@ -33,7 +33,8 @@
 
 //dummy function
 -(float) getScaleAngle:(NSString*) imgURL {
-    return 30.0f;
+    id <DetectorAlgorithm> algo = [[ScaleDetector alloc] init];
+    return [algo applyDetectorAlgorithm:imgURL];
 }
 
 @end
