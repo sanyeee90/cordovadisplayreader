@@ -6,6 +6,7 @@
 #include "preprocess.h"
 #include "eventhandler.h"
 #include "line.h"
+#include "autoruler.h"
 extern "C" {
 #include "Yin.h"
 }
@@ -35,10 +36,31 @@ int main(int argc, char** argv)
 	Mat Icol = imread(filename, CV_LOAD_IMAGE_COLOR);
 	Mat processed;
 	Mat result, resultconj;
-
-	cropImage(Icol, processed);
-	cv::cvtColor(processed, processed, CV_RGB2GRAY);
-
+    
+    preprocessImage(Icol, processed);
+    imshow("processed", processed);
+    waitKey();
+    
+    
+     AutoRuler autoruler(Icol);
+     autoruler.generateImage();
+     
+     Mat** images = autoruler.getImageBlocks();
+     
+     for (int i = 0;i < autoruler.getSamplesPerWidth(); i++) {
+        for (int j = 0; j<autoruler.getSamplesPerHeight(); j++) {
+         cv:cvtColor(images[i][j], processed, CV_RGB2GRAY);
+         psdt(processed,result);
+         char string[10];
+         sprintf(string, "valami %d, %d", i, j);
+         imshow(string, result);
+        }
+     }
+    //gaussianWindow(processed, Point(20,50), 10, processed);
+    waitKey();
+    
+    return 0;
+    
 	psdt(processed, result);
 	Mat stg;
 	float angle = getLineAngle(result, stg);
@@ -81,9 +103,11 @@ int main(int argc, char** argv)
 
 void preprocessImage(Mat& inputImage, Mat& processedImage) {
 	Mat blurred, gray;
+    double minVal, maxVal;
 	cv::cvtColor(inputImage, gray, CV_RGB2GRAY);
+    bitwise_not(gray, gray);
 	GaussianBlur(gray, blurred, cv::Size(3,3), 3);
-	addWeighted(gray, 1.5, blurred, -0.5, 0, processedImage);
+    addWeighted(gray, 0.6, blurred, -0.5, 128, processedImage);
 }
 
 
