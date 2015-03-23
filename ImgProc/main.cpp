@@ -33,14 +33,16 @@ void cropImage(Mat& input, Mat& output) {
 int main(int argc, char** argv)
 {
 	const char* filename = argc >= 2 ? argv[1] : "img/2.png";
-	Mat Icol = imread(filename, CV_LOAD_IMAGE_COLOR);
+	Mat Icol = imread(filename, IMREAD_COLOR);
 	Mat processed;
 	Mat result, resultconj;
     
-    preprocessImage(Icol, processed);
+    //preprocessImage(Icol, processed);
+    cv::cvtColor(Icol, processed, COLOR_RGB2GRAY);
+    
     imshow("processed", processed);
     waitKey();
-    
+    /*
     
      AutoRuler autoruler(Icol);
      autoruler.generateImage();
@@ -49,16 +51,16 @@ int main(int argc, char** argv)
      
      for (int i = 0;i < autoruler.getSamplesPerWidth(); i++) {
         for (int j = 0; j<autoruler.getSamplesPerHeight(); j++) {
-         cv:cvtColor(images[i][j], processed, CV_RGB2GRAY);
+         cv:cvtColor(images[i][j], processed, COLOR_RGB2GRAY);
          psdt(processed,result);
          char string[10];
          sprintf(string, "valami %d, %d", i, j);
          imshow(string, result);
         }
-     }
+     }*/
     //gaussianWindow(processed, Point(20,50), 10, processed);
+    fourier(processed, processed, false);
     waitKey();
-    
     return 0;
     
 	psdt(processed, result);
@@ -91,7 +93,7 @@ int main(int argc, char** argv)
 	}
     
 	Mat colored;
-	cvtColor(processed, colored, CV_GRAY2BGR);
+	cvtColor(processed, colored, COLOR_GRAY2BGR);
     generatedLine->applyToImage(colored, Scalar(255,0,0));
     generatedLine->applyScalePoints(colored, buffer_length-1);
 	imshow("processed", colored);
@@ -104,7 +106,7 @@ int main(int argc, char** argv)
 void preprocessImage(Mat& inputImage, Mat& processedImage) {
 	Mat blurred, gray;
     double minVal, maxVal;
-	cv::cvtColor(inputImage, gray, CV_RGB2GRAY);
+	cv::cvtColor(inputImage, gray, COLOR_RGB2GRAY);
     bitwise_not(gray, gray);
 	GaussianBlur(gray, blurred, cv::Size(3,3), 3);
     addWeighted(gray, 0.6, blurred, -0.5, 128, processedImage);

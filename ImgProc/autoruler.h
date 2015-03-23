@@ -12,7 +12,7 @@
 #include <iostream>
 #include "opencv2/core/core.hpp"
 
-#define BLOCK_SIZE 20
+#define BLOCK_SIZE 100
 
 using namespace cv;
 
