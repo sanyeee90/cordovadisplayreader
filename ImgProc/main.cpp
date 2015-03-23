@@ -2,6 +2,8 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/features2d/features2d.hpp>
 #include "opencv2/highgui/highgui.hpp"
+
+
 #include <iostream>
 #include "preprocess.h"
 #include "eventhandler.h"
@@ -11,104 +13,106 @@ extern "C" {
 #include "Yin.h"
 }
 
-using namespace cv;
 using namespace std;
 
-void blobDetection(Mat,Mat);
-void preprocessImage(Mat& inputImage, Mat& processedImage);
-static EventHandler mouseHandler;
+int main(){
 
-void static mouseHandlerWrapper(int event, int x, int y, int flags, void *param) {
-	mouseHandler(event, x, y, flags, param);
-}
+    Mat box = imread("img/pfm20det.png",1);
+    Mat gray;
+    Mat detected_edges, blurred;
+    cvtColor(box, gray, COLOR_RGB2GRAY);
+    
+    Ptr<MSER> ms  = MSER::create(9,100,1000);
 
-void cropImage(Mat& input, Mat& output) {
-	Mat temp = input.clone();
-	//Mat roi2(temp, Rect(Point(255,159), Point(310,216)));
-	//Mat curr_imgT = roi2.clone();
-	temp.copyTo(output);
-	//output = curr_imgT;
-}
-
-int main(int argc, char** argv)
-{
-	const char* filename = argc >= 2 ? argv[1] : "img/2.png";
-	Mat Icol = imread(filename, CV_LOAD_IMAGE_COLOR);
-	Mat processed;
-	Mat result, resultconj;
+    vector<vector <Point> > regions;
+    vector<Rect> boxes;
+    ms->detectRegions(gray, regions, boxes);
+    int allContours = -1;
+    int thickness=2;
+    Mat binary(box.size(), CV_8U);
     
-    preprocessImage(Icol, processed);
-    imshow("processed", processed);
-    waitKey();
+    drawContours(binary, regions, allContours, Scalar::all(255), thickness);
     
+    imshow("binary",binary);
     
-     AutoRuler autoruler(Icol);
-     autoruler.generateImage();
-     
-     Mat** images = autoruler.getImageBlocks();
-     
-     for (int i = 0;i < autoruler.getSamplesPerWidth(); i++) {
-        for (int j = 0; j<autoruler.getSamplesPerHeight(); j++) {
-         cv:cvtColor(images[i][j], processed, CV_RGB2GRAY);
-         psdt(processed,result);
-         char string[10];
-         sprintf(string, "valami %d, %d", i, j);
-         imshow(string, result);
-        }
-     }
-    //gaussianWindow(processed, Point(20,50), 10, processed);
-    waitKey();
+    blur( gray, blurred, Size(3,3) );
     
-    return 0;
+    Canny( gray, detected_edges, 20, 20*3 );
     
-	psdt(processed, result);
-	Mat stg;
-	float angle = getLineAngle(result, stg);
-	cout << angle << endl;
-
-    Point P1(result.cols / 2, result.rows / 2);
-    Line* generatedLine = new Line(angle, P1);
+    Mat result;
+    binary.copyTo(result, detected_edges);
     
-    vector<uchar> *values = new vector<uchar>(generatedLine->getImageData(processed));
-
-    int16_t *data = new int16_t[values->size()];
-    int i = 0;
-    for(vector<uchar>::iterator it = values->begin(); it != values->end();it++){
-        data[i]=(int16_t)*it;
-        cout<< data[i] << " ";
-        i++;
+    vector<vector<Point> > contours;
+    vector<Vec4i> hierarchy;
+    vector<Vec3f> vecCircles;
+    vector<Vec3f>::iterator itrCircles;
+    
+    bitwise_not(binary, binary);
+    
+    int morph_size = 1;
+    Mat element = getStructuringElement( MORPH_ELLIPSE, Size( 2*morph_size + 1, 2*morph_size+1 ) );
+    morphologyEx( binary, binary, MORPH_OPEN, element, Point(-1,-1), 1 );
+    morphologyEx( binary, binary, MORPH_CLOSE, element, Point(-1,-1), 1 );
+    
+    bitwise_not(binary, binary);
+        
+    findContours(binary, contours, hierarchy, RETR_EXTERNAL,  CHAIN_APPROX_SIMPLE, Point(0, 0) );
+    
+    /// Approximate contours to polygons + get bounding rects and circles
+    vector<vector<Point> > contours_poly( contours.size() );
+    vector<Rect> boundRect( contours.size() );
+    vector<Point2f>center( contours.size() );
+    vector<float>radius( contours.size() );
+    
+    for( int i = 0; i < contours.size(); i++ )
+    {
+        approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );
+        boundRect[i] = boundingRect( Mat(contours_poly[i]) );
     }
-
-    int buffer_length = 10;
-    Yin yin;
-    float pitch;
-
-    while (pitch < 10 ) {
-        Yin_init(&yin, buffer_length, 0.25);
-		pitch = Yin_getPitch(&yin, data);
-        cout<< "buffer_length: " << buffer_length << "pitch: " << pitch << endl;
-		buffer_length++;
-	}
     
-	Mat colored;
-	cvtColor(processed, colored, CV_GRAY2BGR);
-    generatedLine->applyToImage(colored, Scalar(255,0,0));
-    generatedLine->applyScalePoints(colored, buffer_length-1);
-	imshow("processed", colored);
-	waitKey();
 
-	return 0;
+    
+    
+    
+    
+    /// Draw polygonal contour + bonding rects
+    Mat drawing = Mat::zeros( binary.size(), CV_8UC3 );
+    char s[3] = "ss";
+    for( int i = 0; i< contours.size(); i++ )
+    {
+        Scalar color = Scalar(255,0,255);
+        drawContours( drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
+        rectangle( box, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0 );
+        Mat res = result(boundRect[i]);
+        
+        sprintf(s, "%d", i);
+        imshow(s, result(boundRect[i]));
+    }
+    Size newSize(binary.size().width/2, binary.size().height/2);
+    /*    for (int i = 0; i < regions.size(); i++)
+    {
+        ellipse(box, fitEllipse(regions[i]), Scalar(255));
+    }*/
+    
+    resize(binary,             // input image
+           binary ,           // result image
+           newSize,    // new dimensions
+           0,
+           0,
+           INTER_CUBIC       // interpolation method
+           );
+    imshow("bin", binary);
+    resize(box,             // input image
+           box ,           // result image
+           newSize,    // new dimensions
+           0,
+           0,
+           INTER_CUBIC       // interpolation method
+           );
+    imshow("ooo", box);
+    imshow("mser", result);
+    waitKey(0);
+    return 0;
+
 
 }
-
-void preprocessImage(Mat& inputImage, Mat& processedImage) {
-	Mat blurred, gray;
-    double minVal, maxVal;
-	cv::cvtColor(inputImage, gray, CV_RGB2GRAY);
-    bitwise_not(gray, gray);
-	GaussianBlur(gray, blurred, cv::Size(3,3), 3);
-    addWeighted(gray, 0.6, blurred, -0.5, 128, processedImage);
-}
-
-
-

@@ -19,7 +19,7 @@ void blobDetection(Mat orig, Mat src) {
 	vector<vector<Point> > contours; // storing contour
 	vector<Vec4i> hierarchy;
 
-	findContours(temp, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE);
+	findContours(temp, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
 
 	for (int i = 0; i< contours.size(); i++) // iterate
 	{
@@ -35,7 +35,7 @@ void blobDetection(Mat orig, Mat src) {
 	}
 
 	Scalar color(0, 255, 255);
-	drawContours(orig, contours, largest_contour_index, color, CV_FILLED, 8, hierarchy); // Draw the largest contour using previously stored index.
+	drawContours(orig, contours, largest_contour_index, color, FILLED, 8, hierarchy); // Draw the largest contour using previously stored index.
 	rectangle(orig, bounding_rect, Scalar(0, 255, 0), 1, 8, 0);
 	imshow("blobs", orig);
 	//imshow("dst", dst2);
@@ -59,7 +59,7 @@ void psdt(const Mat& input, Mat& output) {
 
 	Mat normal;
 	dft(result, normal, DFT_INVERSE + DFT_REAL_OUTPUT);
-	normalize(normal, normal, 0, 1, CV_MINMAX);
+	normalize(normal, normal, 0, 1, NORM_MINMAX);
 	imshow("result", normal);
 
 
@@ -94,7 +94,7 @@ void psdt(const Mat& input, Mat& output) {
 	q2.copyTo(q1);
 	tmp.copyTo(q2);
 
-	normalize(magI, magI, 0, 1, CV_MINMAX); // Transform the matrix with float values into a
+	normalize(magI, magI, 0, 1, NORM_MINMAX); // Transform the matrix with float values into a
 	magI.copyTo(output);
 	// viewable image form (float between values 0 and 1).
 	imshow("psdt", magI);
@@ -145,7 +145,7 @@ void fourier(Mat Image, Mat& result, bool isConjugated) {
 	q2.copyTo(q1);
 	tmp.copyTo(q2);
 
-	normalize(magI, magI, 0, 1, CV_MINMAX); // Transform the matrix with float values into a
+	normalize(magI, magI, 0, 1, NORM_MINMAX); // Transform the matrix with float values into a
 	magI.copyTo(result);
 	// viewable image form (float between values 0 and 1).
 	if (isConjugated) {
@@ -163,7 +163,7 @@ void fourier(Mat Image, Mat& result, bool isConjugated) {
 void gaussianWindow(Mat& input, Point center, int windowSize, Mat& output) {
 	Rect roi(center.x - windowSize / 2, center.y - windowSize / 2, windowSize, windowSize);
 	Mat windowedImage = input(roi);
-	adaptiveThreshold(input, output, 255, ADAPTIVE_THRESH_GAUSSIAN_C, CV_THRESH_BINARY, 3, 5);
+	adaptiveThreshold(input, output, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY, 3, 5);
 
 }
 
@@ -184,7 +184,7 @@ float getLineAngle(const Mat& inputmat, Mat& output) {
 	minMaxLoc(temp, &Min, &Max, &minLoc, &maxLoc);
 	dst = temp;
     
-	cvtColor(dst, cdst, CV_GRAY2BGR);
+	cvtColor(dst, cdst, COLOR_GRAY2BGR);
 	Point center(temp.cols / 2, temp.rows / 2);
 	line(cdst, maxLoc, center, Scalar(0, 255, 0), 1);
 

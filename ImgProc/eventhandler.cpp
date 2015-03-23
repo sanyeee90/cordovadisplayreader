@@ -7,7 +7,7 @@ void EventHandler::operator()(int event, int x, int y, int flags, void *param)
 
 	switch (event)
 	{
-	case CV_EVENT_LBUTTONDOWN:
+	case EVENT_LBUTTONDOWN:
 	{
 		std::cout << "Mouse Pressed" << std::endl;
 
@@ -23,7 +23,7 @@ void EventHandler::operator()(int event, int x, int y, int flags, void *param)
 		}
 		break;
 	}
-	case CV_EVENT_LBUTTONUP:
+	case EVENT_LBUTTONUP:
 	{
 		if (!this->got_roi)
 		{
