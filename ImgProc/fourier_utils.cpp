@@ -1,45 +1,8 @@
-#include "preprocess.h"
+#include "fourier_utils.h"
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
 #include <opencv2/highgui/highgui.hpp>
 #include <iostream>
-
-void blobDetection(Mat orig, Mat src) {
-
-	bitwise_not(src, src);
-	Mat dst2;
-	//erode(src, dst2,100.0);
-	int largest_area = 0;
-	int largest_contour_index = 0;
-	Mat temp(src.rows, src.cols, CV_8UC1);
-	Mat dst(src.rows, src.cols, CV_8UC1, Scalar::all(0));
-	Rect bounding_rect;
-	src.copyTo(temp);
-
-	vector<vector<Point> > contours; // storing contour
-	vector<Vec4i> hierarchy;
-
-	findContours(temp, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE);
-
-	for (int i = 0; i< contours.size(); i++) // iterate
-	{
-		double a = contourArea(contours[i], false);  //Find the largest area of contour
-		cout << a << endl;
-		if (a>largest_area)
-		{
-			largest_area = a;
-			largest_contour_index = i;
-			bounding_rect = boundingRect(contours[i]);
-
-		}
-	}
-
-	Scalar color(0, 255, 255);
-	drawContours(orig, contours, largest_contour_index, color, FILLED, 8, hierarchy); // Draw the largest contour using previously stored index.
-	rectangle(orig, bounding_rect, Scalar(0, 255, 0), 1, 8, 0);
-	imshow("blobs", orig);
-	//imshow("dst", dst2);
-}
 
 void psdt(const Mat& input, Mat& output) {
 	Mat invertedImg;
@@ -156,9 +119,6 @@ void fourier(Mat Image, Mat& result, bool isConjugated) {
 	}
 
 }
-
-
-
 
 void gaussianWindow(Mat& input, Point center, int windowSize, Mat& output) {
 	Rect roi(center.x - windowSize / 2, center.y - windowSize / 2, windowSize, windowSize);

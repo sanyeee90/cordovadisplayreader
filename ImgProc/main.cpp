@@ -3,179 +3,138 @@
 #include <opencv2/features2d/features2d.hpp>
 #include "opencv2/highgui/highgui.hpp"
 
+#include "element_extraction.h"
+#include "OCREngine.h"
+#include "utils.h"
+
+#include <tesseract/baseapi.h>
 
 #include <iostream>
-#include "preprocess.h"
-#include "eventhandler.h"
 #include "line.h"
-#include "autoruler.h"
 extern "C" {
 #include "Yin.h"
 }
 
 using namespace std;
 
-cv::Mat findBiggestBlob(cv::Mat & matImage);
+
+float calculateIndicatorPosition(vector<pair<Point, int>> numberPoints, Point indicatorLocation);
+
+int numbers[] = { 60, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800};
 
 int main(){
 
     Mat box = imread("img/pfm20det.png");
+ 
+    Mat blurred;
+    Mat hsvImage;
     Mat gray;
-    Mat detected_edges, blurred;
+    Mat filtered_gray;
+    
+    GaussianBlur(box, blurred, Size(0,0), 3);
+    addWeighted(box, 1.5, blurred, -0.5, 0, box);
+    
+    
+    cvtColor(box, hsvImage, COLOR_BGR2HSV);
+    
+    
     cvtColor(box, gray, COLOR_RGB2GRAY);
     
+    // ---- INDICATOR, NUMBER_PLATE START ---- //
 
     
-    Ptr<MSER> ms  = MSER::create(9,100,1000);
+    Point indicatorPosition = extractIndicator(hsvImage);
+    
+    Mat bigestYellowBlob(hsvImage.size(), CV_8U);
+    extractNumberPlate(hsvImage, bigestYellowBlob);
+    
+    // ---- INDICATOR, NUMBER_PLATE END ---- //
+    
+    // ---- NUMBER FIELDS START ---- //
 
-    vector<vector <Point> > regions;
-    vector<Rect> boxes;
-    ms->detectRegions(gray, regions, boxes);
-    int allContours = -1;
-    int thickness=2;
-    Mat binary(box.size(), CV_8U);
+    gray.copyTo(filtered_gray, bigestYellowBlob);
     
-    drawContours(binary, regions, allContours, Scalar::all(255), thickness);
+    Mat binary(gray.size(), CV_8U, cvScalar(0));
+
+    extractNumberFields(filtered_gray, binary);
+
     
-    imshow("binary",binary);
+    // ---- NUMBER FIELDS END ---- //
     
+    // ---- NUMBERS START ---- //
     
-    Mat hsvImage, hsvTresh;
-    cvtColor(box, hsvImage, COLOR_BGR2HSV);
-    imshow("hsvimage", hsvImage);
-    inRange(hsvImage,Scalar(18,100,120),Scalar(30,255,230),hsvTresh);
-    imshow("hsvtresh", hsvTresh);
+    cv::Mat b = (cv::Mat_<uchar>(3,3) << 1,1,0,0,1,0,0,1,1);
     
-    Mat biggestYellowBlob = findBiggestBlob(hsvTresh);
+    threshold(filtered_gray, filtered_gray, 110, 180, THRESH_BINARY);
+    bitwise_not(filtered_gray, filtered_gray);
+    erode(filtered_gray, filtered_gray, b);
     
-    imshow("biggestyellow", biggestYellowBlob);
+    // ---- NUMBERS END ---- //
     
-    Mat filtered;
-    binary.copyTo(filtered, biggestYellowBlob);
-    imshow("filtered", filtered);
-    filtered.copyTo(binary);
-    blur( gray, blurred, Size(3,3) );
-    
-    Canny( gray, detected_edges, 20, 20*3 );
-    
-    Mat result;
-    binary.copyTo(result, detected_edges);
-    
-    
-    
+    // BOUNDARY OF NUMBERS //
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
-    vector<Vec3f> vecCircles;
-    vector<Vec3f>::iterator itrCircles;
     
-    bitwise_not(binary, binary);
     
-    int morph_size = 1;
-    Mat element = getStructuringElement( MORPH_ELLIPSE, Size( 2*morph_size + 1, 2*morph_size+1 ) );
-    morphologyEx( binary, binary, MORPH_OPEN, element, Point(-1,-1), 1 );
-    morphologyEx( binary, binary, MORPH_CLOSE, element, Point(-1,-1), 1 );
-    
-    bitwise_not(binary, binary);
-        
     findContours(binary, contours, hierarchy, RETR_EXTERNAL,  CHAIN_APPROX_SIMPLE, Point(0, 0) );
+    
+    // BOUNDARY OF NUMBERS END //
+
+    vector<Rect> boundRect( contours.size() );
     
     /// Approximate contours to polygons + get bounding rects and circles
     vector<vector<Point> > contours_poly( contours.size() );
-    vector<Rect> boundRect( contours.size() );
-    vector<Point2f>center( contours.size() );
-    vector<float>radius( contours.size() );
+    
+    vector<pair<Point, int>> pointsWithNumbers(contours.size());
+
+    
+    OCREngine ocr;
     
     for( int i = 0; i < contours.size(); i++ )
     {
         approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );
         boundRect[i] = boundingRect( Mat(contours_poly[i]) );
         
-        minEnclosingCircle( Mat(contours_poly[i]),
-                           center[i], radius[i] );
-        
-        RotatedRect rect = minAreaRect(Mat(contours_poly[i]));
-        cout << rect.angle <<endl;
-        
-        Point2f vertices[4];
-        rect.points(vertices);
-        for (int i = 0; i < 4; i++)
-            line(box, vertices[i], vertices[(i+1)%4], Scalar(0,255,0));
-        
-        Mat res = box(boundRect[i]);
-        
-        
-    }
-    
 
-    /// Draw polygonal contour + bonding rects
-    Mat drawing = Mat::zeros( binary.size(), CV_8UC3 );
-    char s[3] = "ss";
-    
-    int deltax = 0;
-    for( int i = 0; i< contours.size(); i++ )
-    {
-        Scalar color = Scalar(255,0,255);
-        drawContours( drawing, contours_poly, i, color, 1, 8, vector<Vec4i>(), 0, Point() );
-        rectangle( box, boundRect[i].tl(), boundRect[i].br(), color, 2, 8, 0 );
+        Mat res = filtered_gray(boundRect[i]);
+        
+        int number = ocr.getNumberFromImage(res);
+        
+        pointsWithNumbers[i] = pair<Point,int>(calculateCenterOfRectangle(boundRect[i]), numbers[i]);
         
     }
-    Size newSize(binary.size().width/2, binary.size().height/2);
-    /*    for (int i = 0; i < regions.size(); i++)
-    {
-        ellipse(box, fitEllipse(regions[i]), Scalar(255));
-    }*/
+
+    calculateIndicatorPosition(pointsWithNumbers, indicatorPosition);
     
-    resize(binary,             // input image
-           binary ,           // result image
-           newSize,    // new dimensions
-           0,
-           0,
-           INTER_CUBIC       // interpolation method
-           );
-    imshow("bin", binary);
-    resize(box,             // input image
-           box ,           // result image
-           newSize,    // new dimensions
-           0,
-           0,
-           INTER_CUBIC       // interpolation method
-           );
-    imshow("ooo", box);
-    imshow("mser", result);
     waitKey(0);
     return 0;
 
 
 }
 
-
-Mat findBiggestBlob(cv::Mat &src){
-    int largest_area=0;
-    int largest_contour_index=0;
-    Mat temp(src.rows,src.cols,CV_8UC1);
-    Mat dst(src.rows,src.cols,CV_8UC1,Scalar::all(0));
-    Rect boundRect;
-    src.copyTo(temp);
-    
-    vector<vector<Point>> contours; // storing contour
-    vector<Vec4i> hierarchy;
-    
-    findContours( temp, contours, hierarchy,RETR_CCOMP, CHAIN_APPROX_SIMPLE );
-    
-    for( int i = 0; i< contours.size(); i++ ) // iterate
-    {
-        double a=contourArea( contours[i],false);  //Find the largest area of contour
-        if(a>largest_area)
-        {
-            largest_area=a;
-            largest_contour_index=i;
+float calculateIndicatorPosition(vector<pair<Point, int>> numberPoints, Point indicatorLocation) {
+    sort(numberPoints.begin(), numberPoints.end(), compareByHeight);
+    int selectedIndex = 0;
+    for (int i = 0; i < numberPoints.size()-1; i++) {
+        if(numberPoints[i].first.y < indicatorLocation.y && numberPoints[i+1].first.y > indicatorLocation.y) {
+            selectedIndex=i;
         }
-        
     }
+    float startInterval, endInterval;
+    startInterval = numberPoints[selectedIndex].first.y;
+    endInterval = numberPoints[selectedIndex + 1].first.y;
+    
+    float normalized = endInterval - startInterval;
+    
+    float percentage = (indicatorLocation.y-startInterval) / normalized;
 
-    boundRect = boundingRect(Mat(contours[largest_contour_index]));
-    drawContours( dst, contours,largest_contour_index, Scalar(255), FILLED, 8, hierarchy );
-    rectangle( dst, boundRect.tl(), boundRect.br(), Scalar(255), FILLED, 8, 0 );
-    // Draw the largest contour
-    return dst;
+    float resultAmount = (numberPoints[selectedIndex+1].second - numberPoints[selectedIndex].second) * percentage + numberPoints[selectedIndex].second;
+    cout << "interval: " << numberPoints[selectedIndex+1].second << ", min: " << numberPoints[selectedIndex].second << endl;
+
+    cout << "resultAmount: " << resultAmount;
+    
+    
+    return resultAmount;
 }
+
+
