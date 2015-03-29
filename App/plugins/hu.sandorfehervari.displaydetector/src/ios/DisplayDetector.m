@@ -12,6 +12,7 @@
 
 - (void) cordovaGetScaleAngle:(CDVInvokedUrlCommand *)command{
     NSString *filename = [command.arguments objectAtIndex:0];
+    NSLog(filename);
     float retValue = [self getScaleAngle: filename];
     NSDictionary *jsonObj = [ [NSDictionary alloc]
                              initWithObjectsAndKeys :

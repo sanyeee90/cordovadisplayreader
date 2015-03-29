@@ -31,7 +31,7 @@ var App = angular.module("dispreader", ["ionic", "dispreader.services"])
   });
 })
 .controller("AppCtrl", function ($scope, CameraSrv){
-    var path = "www/img/2.PNG"
+    var path = "www/img/pfm20det.PNG"
       $scope.getPhoto = function() {
 cordova.exec(
                                               // Register the callback handler
