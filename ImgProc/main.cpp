@@ -95,15 +95,17 @@ int main(){
         approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );
         boundRect[i] = boundingRect( Mat(contours_poly[i]) );
         
-
+        rectangle(box, boundRect[i].tl(), boundRect[i].br(), Scalar(255,0,255));
         Mat res = filtered_gray(boundRect[i]);
         
         int number = ocr.getNumberFromImage(res);
         
         pointsWithNumbers[i] = pair<Point,int>(calculateCenterOfRectangle(boundRect[i]), numbers[i]);
-        
     }
 
+    imshow("thresh_grey", box);
+    imshow("inputImage", binary);
+    
     calculateIndicatorPosition(pointsWithNumbers, indicatorPosition);
     
     waitKey(0);
@@ -132,7 +134,7 @@ float calculateIndicatorPosition(vector<pair<Point, int>> numberPoints, Point in
     cout << "interval: " << numberPoints[selectedIndex+1].second << ", min: " << numberPoints[selectedIndex].second << endl;
 
     cout << "resultAmount: " << resultAmount;
-    
+
     
     return resultAmount;
 }
