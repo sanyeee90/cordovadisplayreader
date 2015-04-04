@@ -33,24 +33,14 @@ var App = angular.module("dispreader", ["ionic", "dispreader.services"])
 .controller("AppCtrl", function ($scope, CameraSrv){
     var path = "www/img/pfm20det.PNG"
       $scope.getPhoto = function() {
-cordova.exec(
-                                              // Register the callback handler
-                                              function callback(data) {
-                                              console.log('Wrote date ' + data);
-                                              $scope.lastPhoto = data;
-                                              },
-                                              // Register the errorHandler
-                                              function errorHandler(err) {
-                                              console.log('Error' + err);
-                                              },
-                                              // Define what class to route messages to
-                                              'DisplayDetector',
-                                              // Execute this method on the above class
-                                              'cordovaGetScaleAngle',
-                                              // An array containing one String (our newly created Date String).
-                                              [ path ]
-                                              );
-
+            cordova.plugins.DisplayDetector.processImage(path,
+                function errorHandler(err) {
+                    console.log('Error' + err);
+                },
+                function callback(data) {
+                    console.log('Wrote date ' + data);
+                    $scope.lastPhoto = data;
+                });
 
        /*   CameraSrv.getPicture().then(function(imageURI) {
             $scope.lastPhoto = imageURI;

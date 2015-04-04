@@ -10,10 +10,11 @@
 #import "ScaleDetector.h"
 @implementation DisplayDetector
 
-- (void) cordovaGetScaleAngle:(CDVInvokedUrlCommand *)command{
+- (void) processImage:(CDVInvokedUrlCommand *)command{
     NSString *filename = [command.arguments objectAtIndex:0];
     NSLog(filename);
-    float retValue = [self getScaleAngle: filename];
+    id <DetectorAlgorithm> algo = [[ScaleDetector alloc] init];
+    float retValue = [algo applyDetectorAlgorithm:filename];
     NSDictionary *jsonObj = [ [NSDictionary alloc]
                              initWithObjectsAndKeys :
                              [NSNumber numberWithFloat:retValue], @"value",
@@ -26,16 +27,6 @@
                                      ];
     [self.commandDelegate sendPluginResult:pluginResult callbackId:command.callbackId];
 
-}
-
-
-#pragma mark - Util_Methods
-
-
-//dummy function
--(float) getScaleAngle:(NSString*) imgURL {
-    id <DetectorAlgorithm> algo = [[ScaleDetector alloc] init];
-    return [algo applyDetectorAlgorithm:imgURL];
 }
 
 @end

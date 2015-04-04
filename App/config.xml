@@ -12,7 +12,4 @@
     <feature name="StatusBar">
         <param name="ios-package" value="CDVStatusBar" onload="true" />
     </feature>
-    <feature name="DisplayDetector">
-        <param name="ios-package" value="DisplayDetector"  onload="true"/>
-    </feature>
 </widget>

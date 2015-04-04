@@ -14,6 +14,6 @@
 
 #pragma mark - Util_methods
 
--(float) getScaleAngle:(NSString*) imgURL;
+-(float) processImage:(NSString*) imgURL;
 
 @end

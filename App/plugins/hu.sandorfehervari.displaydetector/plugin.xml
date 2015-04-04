@@ -43,12 +43,22 @@
             <header-file src="src/ios/OCREngine.h" />
             <source-file src="src/ios/OCREngine.m" />
             <header-file src="src/ios/preprocess_image.h" />
-            <source-file src="src/ios/preprocess_image.cpp" />            <header-file src="src/ios/ScaleDetector.h" />
+            <source-file src="src/ios/preprocess_image.cpp" />
+            <header-file src="src/ios/ScaleDetector.h" />
             <source-file src="src/ios/ScaleDetector.mm" />            
             <header-file src="src/ios/utils.h" />
             <source-file src="src/ios/utils.cpp" />
 
             <framework src="tessdata" custom="true"/>
 
+        </platform>
+        <platform name="android">
+            <config-file target="res/xml/config.xml" parent="/*">
+                <feature name="DisplayDetector" >
+                    <param name="android-package" value="hu.sandorfehervari.analogdisplayreader.DisplayDetector"/>
+                </feature>
+            </config-file>
+
+            <source-file src="src/android/DisplayDetector.java" target-dir="src/hu/sandorfehervari/analogdisplayreader" />
         </platform>
     </plugin>
