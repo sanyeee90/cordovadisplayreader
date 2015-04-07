@@ -19,9 +19,10 @@
 
 var App = angular.module("dispreader", ["ionic", "dispreader.services"])
 .config(function($compileProvider){
-      $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel):/);
+        $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel):/);
 })
 .run(function($ionicPlatform) {
+
   $ionicPlatform.ready(function() {
     if(window.StatusBar) {
       StatusBar.overlaysWebView(false); //Turns off web view overlay.
@@ -30,17 +31,41 @@ var App = angular.module("dispreader", ["ionic", "dispreader.services"])
     }
   });
 })
+.directive('slideToggle', function() {
+    return {
+        restrict: 'A',
+        scope:{
+            isOpen: "=slideToggle" // 'data-slide-toggle' in our html
+        },
+        link: function(scope, element, attr) {
+            var slideDuration = parseInt(attr.slideToggleDuration, 10) || 200;
+
+            // Watch for when the value bound to isOpen changes
+            // When it changes trigger a slideToggle
+            scope.$watch('isOpen', function(newIsOpenVal, oldIsOpenVal){
+                if(newIsOpenVal !== oldIsOpenVal){
+                    element.stop().slideToggle(slideDuration);
+                }
+            });
+
+        }
+    };
+})
 .controller("AppCtrl", function ($scope, CameraSrv){
-    var path = "www/img/pfm20det.PNG"
+    var path = "img/pfm20det.png"
+
       $scope.getPhoto = function() {
-            cordova.plugins.DisplayDetector.processImage(path,
+            /*cordova.plugins.DisplayDetector.processImage(path,
                 function errorHandler(err) {
                     console.log('Error' + err);
+                    $scope.processError=!$scope.processError;
                 },
                 function callback(data) {
                     console.log('Wrote date ' + data);
                     $scope.lastPhoto = data;
-                });
+                });*/
+          $scope.lastPhoto = path;
+
 
        /*   CameraSrv.getPicture().then(function(imageURI) {
             $scope.lastPhoto = imageURI;

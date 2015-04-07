@@ -60,5 +60,61 @@
             </config-file>
 
             <source-file src="src/android/DisplayDetector.java" target-dir="src/hu/sandorfehervari/analogdisplayreader" />
+            <source-file src="src/android/DisplayDetectorJNI.java" target-dir="src/hu/sandorfehervari/analogdisplayreader" />
+
+            <source-file src="src/android/libs/armeabi/libDisplayReaderJNI.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/liblept.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libnative_camera_r2.2.0.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libnative_camera_r2.3.3.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libnative_camera_r3.0.1.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libnative_camera_r4.0.0.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libnative_camera_r4.0.3.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libnative_camera_r4.1.1.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libnative_camera_r4.2.0.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libnative_camera_r4.3.0.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libnative_camera_r4.4.0.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libopencv_info.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libopencv_java.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libtess.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libtesseract.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi-v7a/libDisplayReaderJNI.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/liblept.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libnative_camera_r2.2.0.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libnative_camera_r2.3.3.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libnative_camera_r3.0.1.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libnative_camera_r4.0.0.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libnative_camera_r4.0.3.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libnative_camera_r4.1.1.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libnative_camera_r4.2.0.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libnative_camera_r4.3.0.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libnative_camera_r4.4.0.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libopencv_info.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libopencv_java.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libtess.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/mips/libDisplayReaderJNI.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/liblept.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libnative_camera_r4.0.3.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libnative_camera_r4.1.1.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libnative_camera_r4.2.0.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libnative_camera_r4.3.0.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libnative_camera_r4.4.0.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libopencv_info.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libopencv_java.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libtess.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/x86/libDisplayReaderJNI.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/liblept.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libnative_camera_r2.3.3.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libnative_camera_r3.0.1.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libnative_camera_r4.0.3.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libnative_camera_r4.1.1.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libnative_camera_r4.2.0.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libnative_camera_r4.3.0.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libnative_camera_r4.4.0.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libopencv_info.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libopencv_java.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libtess.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libtesseract.so" target-dir="libs/x86"/>
+
+            <source-file src="tessdata/eng.traineddata" target="assets/tessdata"/>
         </platform>
     </plugin>
