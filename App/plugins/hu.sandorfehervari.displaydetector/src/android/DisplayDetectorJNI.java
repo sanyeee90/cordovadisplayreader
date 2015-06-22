@@ -5,5 +5,5 @@ package hu.sandorfehervari.analogdisplayreader;
  */
 public class DisplayDetectorJNI {
 
-    public native float processImage(String imagePath);
+    public native float processImage(String imagePath, String tesseractDir);
 }

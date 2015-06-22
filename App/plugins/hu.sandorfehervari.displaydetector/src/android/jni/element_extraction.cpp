@@ -22,10 +22,17 @@ using namespace std;
 
 
 Point extractIndicator(Mat& hsvInputImage) {
-    Mat extracted, lines;
+    Mat extracted, lower_red, upper_red, lines;
 
-    inRange(hsvInputImage, Scalar(0,90,130),Scalar(12,255,241), extracted);
-  
+    inRange(hsvInputImage, Scalar(0,176,139), Scalar(4,243,181), lower_red);
+    inRange(hsvInputImage, Scalar(168,160,138), Scalar(179,255,255), upper_red);
+    
+    bitwise_or(lower_red, upper_red, extracted);
+    
+    Mat kernel = getStructuringElement(MORPH_ELLIPSE,Size(3,3));
+    
+    morphologyEx(extracted, extracted, MORPH_CLOSE, kernel);
+    
     cv::Mat b = (cv::Mat_<uchar>(3,3) << 0,1,0,1,1,1,0,1,1);
     for(int i=0; i < 3; i++){
         erode(extracted, extracted, b);

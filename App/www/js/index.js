@@ -43,34 +43,35 @@ var App = angular.module("dispreader", ["ionic", "dispreader.services"])
             // Watch for when the value bound to isOpen changes
             // When it changes trigger a slideToggle
             scope.$watch('isOpen', function(newIsOpenVal, oldIsOpenVal){
-                if(newIsOpenVal !== oldIsOpenVal){
-                    element.stop().slideToggle(slideDuration);
+                if(newIsOpenVal == true){
+                    element.stop().slideDown(slideDuration);
+                } else {
+                    element.stop().slideUp(slideDuration);
                 }
             });
 
         }
     };
 })
-.controller("AppCtrl", function ($scope, CameraSrv){
-    var path = "img/pfm20det.png"
+.controller("AppCtrl", function ($scope, CameraSrv, DisplayReaderService){
 
       $scope.getPhoto = function() {
-            /*cordova.plugins.DisplayDetector.processImage(path,
-                function errorHandler(err) {
-                    console.log('Error' + err);
-                    $scope.processError=!$scope.processError;
-                },
-                function callback(data) {
-                    console.log('Wrote date ' + data);
-                    $scope.lastPhoto = data;
-                });*/
-          $scope.lastPhoto = path;
-
-
-       /*   CameraSrv.getPicture().then(function(imageURI) {
+          CameraSrv.getPicture().then(function(imageURI) {
             $scope.lastPhoto = imageURI;
+            DisplayReaderService.processImage(imageURI).then(
+                function (data) {
+                    console.log($scope);
+                    $scope.resultValue = data.value;
+                    $scope.processError=false;
+                    console.log('Wrote data ' + data.value);
 
+                },
+                function (err) {
+                    $scope.processError=true;
+                    console.err('Error' + err);
+                });
           }, function(err) {
+            $scope.processError=true;
             console.err(err);
           }, {
             quality: 75,
@@ -78,9 +79,7 @@ var App = angular.module("dispreader", ["ionic", "dispreader.services"])
             targetHeight: 320,
             saveToPhotoAlbum: false,
             destinationType : Camera.DestinationType.DATA_URL
-          });*/
+          });
         };
     });
-
-
-//document.addEventListener('deviceready', onDeviceReady, false);
+document.addEventListener('deviceready', onDeviceReady, false);

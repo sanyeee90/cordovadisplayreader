@@ -43,10 +43,9 @@ int numbers[] = { 60, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650
     return cvMat;
 }
 
--(float) applyDetectorAlgorithm:(NSString*) imgURL {
+-(float) applyDetectorAlgorithm:(UIImage*) image {
     float retValue = 0.0f;
-    
-    UIImage* image = [UIImage imageNamed:imgURL];
+   
     cv::Mat imageToProcess;
     cv::Mat processed;
     cv::Mat hsvImage, gray;
@@ -62,10 +61,16 @@ int numbers[] = { 60, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650
     
     // ---- INDICATOR, NUMBER_PLATE START ---- //
     
-    cv::Point indicatorPosition = extractIndicator(hsvImage);
+    cv::Point indicatorPosition;
+    
+    if (int result = extractIndicator(hsvImage, indicatorPosition)) {
+        return -result;
+    }
     
     cv::Mat bigestYellowBlob(hsvImage.size(), CV_8U);
-    extractNumberPlate(hsvImage, bigestYellowBlob);
+    if (int result = extractNumberPlate(hsvImage, bigestYellowBlob)) {
+        return -result;
+    }
     
     // ---- INDICATOR, NUMBER_PLATE END ---- //
     
@@ -123,7 +128,7 @@ int numbers[] = { 60, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650
         
         NSInteger number = [ocr getNumberFromImage: rect];
         
-        NSLog(@"Read number: %d \n", number);
+        NSLog(@"Read number: %ld \n", (long)number);
         
         pointsWithNumbers[i] = std::pair<cv::Point,int>(calculateCenterOfRectangle(boundRect[i]), numbers[i]);
         delete rect;
@@ -133,7 +138,7 @@ int numbers[] = { 60, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650
     
     NSArray *paths = NSSearchPathForDirectoriesInDomains(NSDocumentDirectory, NSUserDomainMask, YES);
     NSString *filePath = [[paths objectAtIndex:0] stringByAppendingPathComponent:@"Image.png"];
-    NSLog(filePath);
+
     // Save image.
     [UIImagePNGRepresentation(resultImg) writeToFile:filePath atomically:YES];
     

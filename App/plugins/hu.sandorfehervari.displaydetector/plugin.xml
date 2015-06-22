@@ -115,6 +115,6 @@
             <source-file src="src/android/libs/x86/libtess.so" target-dir="libs/x86"/>
             <source-file src="src/android/libs/x86/libtesseract.so" target-dir="libs/x86"/>
 
-            <source-file src="tessdata/eng.traineddata" target="assets/tessdata"/>
+            <source-file src="tessdata/eng.traineddata" target-dir="assets/tessdata"/>
         </platform>
     </plugin>

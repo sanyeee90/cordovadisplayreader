@@ -38,11 +38,14 @@
                 <h1 class="title">Display Reader</h1>
         </ion-header-bar>
         <div id="errorMessage" class="bar bar-loading bar-assertive" data-slide-toggle="processError" data-slide-toggle-duration="1000">
-            Error: something went wrong
+            <h3 class="title">Hiba: probléma merült fel a detektálás során</h3>
         </div>
         <ion-content class="has-header" scroll="false" padding="true">
             <div ng-if="lastPhoto == undefined">
                 A felvételhez nyomja meg a lenti kamera gombot!
+            </div>
+            <div ng-if="resultValue != undefined" class="row, text-center">
+                <h2>{{resultValue}}</h2>
             </div>
             <div class="row contentArea">
                 <div class="col last-image" style="background-image: url('../{{lastPhoto}}')">

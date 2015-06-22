@@ -15,6 +15,6 @@ bool compareByHeight(std::pair<cv::Point, int> p1, std::pair<cv::Point, int> p2)
 
 cv::Point calculateCenterOfRectangle(cv::Rect rectangle);
 
-void findBiggestBlob(cv::Mat &src, cv::Mat &dst);
+int findBiggestBlob(cv::Mat &src, cv::Mat &dst);
 
 #endif /* defined(__Csucsaramlasmero__utils__) */

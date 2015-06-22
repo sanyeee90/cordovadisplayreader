@@ -8,7 +8,7 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
-
+#include "constants.h"
 #include "utils.h"
 
 using namespace cv;
@@ -23,7 +23,7 @@ bool compareByHeight(pair<Point, int> p1, pair<Point, int> p2){
     return (p1.first.y < p2.first.y);
 }
 
-void findBiggestBlob(cv::Mat &src, cv::Mat &dst){
+int findBiggestBlob(cv::Mat &src, cv::Mat &dst){
     int largest_area=0;
     int largest_contour_index=0;
     Mat temp(src.rows,src.cols,CV_8UC1);
@@ -47,8 +47,12 @@ void findBiggestBlob(cv::Mat &src, cv::Mat &dst){
         
     }
     
+    if (contours.size() == 0) {
+        return BLOB_DETECTION_FAILED;
+    }
+    
     boundRect = boundingRect(Mat(contours[largest_contour_index]));
     drawContours( dst, contours,largest_contour_index, Scalar(255), CV_FILLED, 8, hierarchy );
     rectangle( dst, boundRect.tl(), boundRect.br(), Scalar(255), CV_FILLED, 8, 0 );
-    // Draw the largest contour
+    return COMMON_SUCCESS;
 }

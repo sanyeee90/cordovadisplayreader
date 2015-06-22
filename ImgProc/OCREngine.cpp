@@ -10,15 +10,17 @@
 
 using namespace cv;
 
-OCREngine::OCREngine() {
-    ocrEngine.Init(NULL, "eng", tesseract::OEM_DEFAULT);
+OCREngine::OCREngine(Mat& inputmap) {
+    this->inputImage = &inputmap;
+    ocrEngine.Init("/", "eng", tesseract::OEM_DEFAULT);
     ocrEngine.SetVariable("tessedit_char_whitelist", "0123456789");
     ocrEngine.SetPageSegMode(tesseract::PSM_SINGLE_BLOCK);
 }
 
-int OCREngine::getNumberFromImage(Mat& inputImage) {
+int OCREngine::getNumberFromImage(const Rect& roi) {
     int number;
-    ocrEngine.TesseractRect( inputImage.data, 1, inputImage.step1(), 0, 0, inputImage.cols, inputImage.rows);
+    Mat imgToDetect = this->inputImage->operator()(roi);
+    ocrEngine.TesseractRect( imgToDetect.data, 1, imgToDetect.step1(), 0, 0, imgToDetect.cols, imgToDetect.rows);
     char* out = ocrEngine.GetUTF8Text();
     sscanf(out, "%d", &number);
     return number;

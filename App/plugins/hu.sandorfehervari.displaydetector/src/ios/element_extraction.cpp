@@ -21,7 +21,7 @@ using namespace cv;
 using namespace std;
 
 
-Point extractIndicator(Mat& hsvInputImage) {
+int extractIndicator(Mat& hsvInputImage, Point& indicatorPosition) {
     Mat extracted, lines;
     
     ColourBasedExtractor colourExtractor(Scalar(0,90,130), Scalar(12,255,241));
@@ -29,7 +29,7 @@ Point extractIndicator(Mat& hsvInputImage) {
     colourExtractor.ExtractColour(hsvInputImage, extracted);
     
     cv::Mat b = (cv::Mat_<uchar>(3,3) << 0,1,0,1,1,1,0,1,1);
-    for(int i=0; i < 3; i++){
+    for(int i=0; i < 8; i++){
         erode(extracted, extracted, b);
     }
     
@@ -42,31 +42,29 @@ Point extractIndicator(Mat& hsvInputImage) {
     vector<Vec4i> hierarchy;
     findContours(lines, contours, hierarchy, RETR_EXTERNAL,  CHAIN_APPROX_SIMPLE, Point(0, 0) );
     Mat temp(extracted.size(), CV_8U);
-    
-    Point mostLeftPoint(contours[0][0]);
+    if (contours.size()==0 || contours[0].size() == 0) {
+        return INDICATOR_DETECTION_FAILED;
+    }
+    indicatorPosition = contours[0][0];
     for (int i = 0; i<contours.size(); i++) {
         approxPolyDP(contours[i], contours[i], 2, true);
         for (int j = 0; j < contours[i].size(); j++) {
-            if (mostLeftPoint.x > contours[i][j].x) {
-                mostLeftPoint = contours[i][j];
+            if (indicatorPosition.x > contours[i][j].x) {
+                indicatorPosition = contours[i][j];
             }
         }
     }
-
-    //circle(temp, mostLeftPoint, 4, Scalar(255));
     
-    //drawContours(temp, contours, -1, Scalar::all(255), 1);
-    
-    return mostLeftPoint;
+    return COMMON_SUCCESS;
 }
 
 
-void extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst) {
+int extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst) {
     Mat extractedColor(hsvInputImage.size(), CV_8U);
     ColourBasedExtractor colourExtractor(YELLOW_RANGE_START, YELLOW_RANGE_END);
     
     colourExtractor.ExtractColour(hsvInputImage, extractedColor);
-    findBiggestBlob(extractedColor, dst);
+    return findBiggestBlob(extractedColor, dst);
     
 }
 

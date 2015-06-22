@@ -10,133 +10,65 @@
 #include <tesseract/baseapi.h>
 
 #include <iostream>
-#include "line.h"
-extern "C" {
-#include "Yin.h"
+#include "algorithm.h"
+
+
+
+int main_range() {
+    Mat box_amazon = imread("img/pfm20_amazon.jpg");
+    Mat box_straight = imread("img/pfm20_straight.png");
+    Mat box_shapred = imread("img/pfm20_sharped.png");
+    Mat box_lowres = imread("img/pfm20.png");
+    Mat box_straight_nonsharp = imread("img/pfm20det_straight.png");
+    
+    Mat box_amazon_hsv, box_straight_hsv,box_shapred_hsv,box_lowres_hsv,box_straight_nonsharp_hsv;
+    
+    
+    cvtColor(box_amazon, box_amazon_hsv, COLOR_BGR2HSV);
+    cvtColor(box_straight, box_straight_hsv, COLOR_BGR2HSV);
+    cvtColor(box_shapred, box_shapred_hsv, COLOR_BGR2HSV);
+    cvtColor(box_lowres, box_lowres_hsv, COLOR_BGR2HSV);
+    cvtColor(box_straight_nonsharp, box_straight_nonsharp_hsv, COLOR_BGR2HSV);
+    
+    Mat yellow_amazon(box_amazon.size(), CV_8U, cvScalar(0));
+    Mat straight(box_straight.size(), CV_8U, cvScalar(0));
+    Mat sharped(box_shapred.size(), CV_8U, cvScalar(0));
+    Mat lowres(box_lowres.size(), CV_8U, cvScalar(0));
+    Mat straight_nonsharp(box_straight_nonsharp.size(), CV_8U, cvScalar(0));
+    
+    extractNumberPlate(box_amazon_hsv, yellow_amazon);
+    extractNumberPlate(box_straight_hsv, straight);
+    extractNumberPlate(box_shapred_hsv, sharped);
+    extractNumberPlate(box_lowres_hsv, lowres);
+    extractNumberPlate(box_straight_nonsharp_hsv, straight_nonsharp);
+    Mat temp(straight.size(), CV_8U, cvScalar(0));
+    box_straight.copyTo(temp, straight);
+    imshow("amazonakurvaanyad", temp);
+    imshow("straight", straight);
+    imshow("sharped", sharped);
+    imshow("lowres", lowres);
+    imshow("straight_nonsharp", straight_nonsharp);
+    
+    /*extractIndicator(box_amazon_hsv, "pfm20_amazon.jpg");
+    extractIndicator(box_straight_hsv, "pfm20_straight.png");
+    extractIndicator(box_shapred_hsv, "pfm20_sharped.png");
+    extractIndicator(box_lowres_hsv, "pfm20.png");
+    extractIndicator(box_straight_nonsharp_hsv, "pfm20det_straight.png");*/
+    waitKey(0);
+    return 0;
 }
 
-using namespace std;
 
-
-float calculateIndicatorPosition(vector<pair<Point, int>> numberPoints, Point indicatorLocation);
-
-int numbers[] = { 60, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800};
 
 int main(){
+    //Mat box = imread("img/pfm20det.png");
+    Mat box = imread("img/pfm20_amazon.jpg");
+    readResultFromPFM(box);
 
-    Mat box = imread("img/pfm20det.png");
- 
-    Mat blurred;
-    Mat hsvImage;
-    Mat gray;
-    Mat filtered_gray;
-    
-    GaussianBlur(box, blurred, Size(0,0), 3);
-    addWeighted(box, 1.5, blurred, -0.5, 0, box);
-    
-    
-    cvtColor(box, hsvImage, COLOR_BGR2HSV);
-    
-    
-    cvtColor(box, gray, COLOR_RGB2GRAY);
-    
-    // ---- INDICATOR, NUMBER_PLATE START ---- //
-
-    
-    Point indicatorPosition = extractIndicator(hsvImage);
-    
-    Mat bigestYellowBlob(hsvImage.size(), CV_8U);
-    extractNumberPlate(hsvImage, bigestYellowBlob);
-    
-    // ---- INDICATOR, NUMBER_PLATE END ---- //
-    
-    // ---- NUMBER FIELDS START ---- //
-
-    gray.copyTo(filtered_gray, bigestYellowBlob);
-    
-    Mat binary(gray.size(), CV_8U, cvScalar(0));
-
-    extractNumberFields(filtered_gray, binary);
-
-    
-    // ---- NUMBER FIELDS END ---- //
-    
-    // ---- NUMBERS START ---- //
-    
-    cv::Mat b = (cv::Mat_<uchar>(3,3) << 1,1,0,0,1,0,0,1,1);
-    
-    threshold(filtered_gray, filtered_gray, 110, 180, THRESH_BINARY);
-    bitwise_not(filtered_gray, filtered_gray);
-    erode(filtered_gray, filtered_gray, b);
-    
-    // ---- NUMBERS END ---- //
-    
-    // BOUNDARY OF NUMBERS //
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-    
-    
-    findContours(binary, contours, hierarchy, RETR_EXTERNAL,  CHAIN_APPROX_SIMPLE, Point(0, 0) );
-    
-    // BOUNDARY OF NUMBERS END //
-
-    vector<Rect> boundRect( contours.size() );
-    
-    /// Approximate contours to polygons + get bounding rects and circles
-    vector<vector<Point> > contours_poly( contours.size() );
-    
-    vector<pair<Point, int>> pointsWithNumbers(contours.size());
-
-    
-    OCREngine ocr;
-    
-    for( int i = 0; i < contours.size(); i++ )
-    {
-        approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );
-        boundRect[i] = boundingRect( Mat(contours_poly[i]) );
-        
-        rectangle(box, boundRect[i].tl(), boundRect[i].br(), Scalar(255,0,255));
-        Mat res = filtered_gray(boundRect[i]);
-        
-        int number = ocr.getNumberFromImage(res);
-        
-        pointsWithNumbers[i] = pair<Point,int>(calculateCenterOfRectangle(boundRect[i]), numbers[i]);
-    }
-
-    imshow("thresh_grey", box);
-    imshow("inputImage", binary);
-    
-    calculateIndicatorPosition(pointsWithNumbers, indicatorPosition);
-    
     waitKey(0);
+
     return 0;
 
 
 }
-
-float calculateIndicatorPosition(vector<pair<Point, int>> numberPoints, Point indicatorLocation) {
-    sort(numberPoints.begin(), numberPoints.end(), compareByHeight);
-    int selectedIndex = 0;
-    for (int i = 0; i < numberPoints.size()-1; i++) {
-        if(numberPoints[i].first.y < indicatorLocation.y && numberPoints[i+1].first.y > indicatorLocation.y) {
-            selectedIndex=i;
-        }
-    }
-    float startInterval, endInterval;
-    startInterval = numberPoints[selectedIndex].first.y;
-    endInterval = numberPoints[selectedIndex + 1].first.y;
-    
-    float normalized = endInterval - startInterval;
-    
-    float percentage = (indicatorLocation.y-startInterval) / normalized;
-
-    float resultAmount = (numberPoints[selectedIndex+1].second - numberPoints[selectedIndex].second) * percentage + numberPoints[selectedIndex].second;
-    cout << "interval: " << numberPoints[selectedIndex+1].second << ", min: " << numberPoints[selectedIndex].second << endl;
-
-    cout << "resultAmount: " << resultAmount;
-
-    
-    return resultAmount;
-}
-
 

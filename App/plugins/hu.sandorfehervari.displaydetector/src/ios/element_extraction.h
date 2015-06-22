@@ -11,8 +11,8 @@
 
 #include "opencv2/opencv.hpp"
 
-cv::Point extractIndicator(cv::Mat& hsvInputImage);
-void extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst);
+int extractIndicator(cv::Mat& hsvInputImage, cv::Point& point);
+int extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst);
 void extractNumberFields(cv::Mat& grayInputImage, cv::Mat& dst);
 
 #endif /* defined(__Csucsaramlasmero__element_extraction__) */

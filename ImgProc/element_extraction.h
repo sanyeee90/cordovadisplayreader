@@ -10,8 +10,8 @@
 #define __Csucsaramlasmero__element_extraction__
 
 #include "opencv2/core/core.hpp"
-
-cv::Point extractIndicator(cv::Mat& hsvInputImage);
+using namespace cv;
+Point extractIndicator(Mat& hsvInput);
 void extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst);
 void extractNumberFields(cv::Mat& grayInputImage, cv::Mat& dst);
 

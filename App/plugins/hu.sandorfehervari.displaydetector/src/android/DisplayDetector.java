@@ -19,6 +19,8 @@
 
 package hu.sandorfehervari.analogdisplayreader;
 
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.content.res.AssetManager;
 import android.os.Environment;
 import android.util.Log;
@@ -30,16 +32,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 
 public class DisplayDetector extends CordovaPlugin
 {
     public static final String TAG = "DisplayDetector";
+    private static final String APP_PREFERENCES = "DisplayDetectorPref";
+
+    private static final String ASSET_TESSDATA_PATH = "tessdata/eng.traineddata";
+
+    private static final String TESSDATA_PATH = "TessDataPath";
+    private static final String TESSDATA_FILE = "tessdata/eng.traineddata";
+    private String tessDataFile = "";
 
     static
     {
+        System.loadLibrary("opencv_java");
+        System.loadLibrary("lept");
+        System.loadLibrary("tess");
         System.loadLibrary("DisplayReaderJNI");
     }
 
@@ -55,7 +65,64 @@ public class DisplayDetector extends CordovaPlugin
      * @param webView The CordovaWebView Cordova is running in.
      */
     public void initialize(CordovaInterface cordova, CordovaWebView webView) {
+
         super.initialize(cordova, webView);
+
+        SharedPreferences sharedPrefs = cordova.getActivity().getSharedPreferences(APP_PREFERENCES, 0);
+        tessDataFile = sharedPrefs.getString(TESSDATA_PATH, "");
+
+        if ("".equals(tessDataFile) || !isFileAlreadyCopied(tessDataFile)) {
+                tessDataFile = copyDataToStorage();
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.putString(TESSDATA_PATH, tessDataFile);
+                editor.commit();
+        }
+
+    }
+
+    private String copyDataToStorage() {
+        Context Context = cordova.getActivity().getApplicationContext();
+        String destinationFile = Context.getFilesDir().getPath() + File.separator;
+        File outputFile = new File(destinationFile + TESSDATA_FILE);
+        InputStream IS = null;
+        OutputStream OS = null;
+        try {
+            IS = Context.getAssets().open(ASSET_TESSDATA_PATH);
+            outputFile.getParentFile().mkdirs();
+            OS = new FileOutputStream(outputFile, false);
+            CopyStream(IS, OS);
+            OS.flush();
+        } catch (IOException ex) {
+            Log.d(TAG, ex.getMessage());
+            ex.getStackTrace();
+            Log.e(TAG, "Failed to copy the file from the asset folder.");
+            return "";
+        } finally {
+            try {
+                IS.close();
+            } catch (Exception ex) {
+                Log.e(TAG, "exception happened when tried to close the inputStream.");
+            }
+            try {
+                OS.close();
+            } catch (Exception ex) {
+                Log.e(TAG, "exception happened when tried to close the outputStream.");
+            }
+        }
+        return destinationFile;
+    }
+
+    private boolean isFileAlreadyCopied(String path) {
+        return new File(path + TESSDATA_FILE).exists();
+    }
+
+    private void CopyStream(InputStream Input, OutputStream Output) throws IOException {
+        byte[] buffer = new byte[5120];
+        int length = Input.read(buffer);
+        while (length > 0) {
+            Output.write(buffer, 0, length);
+            length = Input.read(buffer);
+        }
     }
 
     /**
@@ -72,51 +139,34 @@ public class DisplayDetector extends CordovaPlugin
      * @return                  True if the action was valid, false if not.
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
+
         if (action.equals("processImage")) {
-            JSONObject result = new JSONObject();
+            cordova.getThreadPool().execute(new Runnable() {
+                public void run() {
+                    if ("".equals(tessDataFile)) {
+                        callbackContext.error("failed initialize the detector plugin");
+                        return true;
+                    }
 
+                    File fileToProcess = new File(args.getString(0));
+                    if (!fileToProcess.exists()) {
+                        callbackContext.error("failed to load the input image.");
+                        return true;
+                    }
 
-            result.put("value", new DisplayDetectorJNI().processImage(args.getString(0)));
+                    JSONObject result = new JSONObject();
 
-            result.put("success", true);
-            callbackContext.success(result);
-        }
-        else {
+                    result.put("value", new DisplayDetectorJNI().processImage(args.getString(0), tessDataFile));
+
+                    result.put("success", true);
+                    callbackContext.success(result);
+                }
+            });
+
+        } else {
             return false;
         }
         return true;
-    }
-
-    private String copyFile(String filename) {
-        AssetManager assetManager = this.cordova.getActivity().getAssets();
-
-        InputStream in = null;
-        OutputStream out = null;
-        String newFileName = null;
-        try {
-            Log.i("tag", "copyFile() "+filename);
-            in = assetManager.open(filename);
-            if (filename.endsWith(".jpg")) // extension was added to avoid compression on APK file
-                newFileName = Environment.getExternalStorageState() + filename.substring(0, filename.length()-4);
-            else
-                newFileName = Environment.getExternalStorageState() + filename;
-            out = new FileOutputStream(newFileName);
-
-            byte[] buffer = new byte[1024];
-            int read;
-            while ((read = in.read(buffer)) != -1) {
-                out.write(buffer, 0, read);
-            }
-            in.close();
-            in = null;
-            out.flush();
-            out.close();
-            out = null;
-        } catch (Exception e) {
-            Log.e("tag", "Exception in copyFile() of "+newFileName);
-            Log.e("tag", "Exception in copyFile() "+e.toString());
-        }
-        return newFileName;
     }
 
 }

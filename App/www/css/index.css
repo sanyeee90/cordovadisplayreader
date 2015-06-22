@@ -133,3 +133,7 @@ h1 {
   background-repeat: no-repeat;
   background-position: center;
 }
+
+.center-text {
+    text-align: center;
+}
