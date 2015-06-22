@@ -13,7 +13,7 @@ using namespace cv;
 
 
 
-float calculateIndicatorPosition(vector<pair<Point, int> > numberPoints, Point indicatorLocation) {
+float calculateIndicatorPosition(vector<pair<Point, int> >& numberPoints, Point& indicatorLocation) {
     sort(numberPoints.begin(), numberPoints.end(), compareByHeight);
     int selectedIndex = 0;
     for (int i = 0; i < numberPoints.size()-1; i++) {
@@ -30,6 +30,5 @@ float calculateIndicatorPosition(vector<pair<Point, int> > numberPoints, Point i
     float percentage = (indicatorLocation.y-startInterval) / normalized;
     
     float resultAmount = (numberPoints[selectedIndex+1].second - numberPoints[selectedIndex].second) * percentage + numberPoints[selectedIndex].second;
-    
     return resultAmount;
 }

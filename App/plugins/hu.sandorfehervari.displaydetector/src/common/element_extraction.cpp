@@ -37,7 +37,7 @@ Point extractIndicator(Mat& hsvInputImage) {
     findBiggestBlob(extracted, blob);
     Canny(extracted, lines, 20, 20*3);
     
-    vector<vector<Point>> contours;
+    vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     findContours(lines, contours, hierarchy, RETR_EXTERNAL,  CHAIN_APPROX_SIMPLE, Point(0, 0) );
     Mat temp(extracted.size(), CV_8U);

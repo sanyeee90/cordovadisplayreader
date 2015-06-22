@@ -16,15 +16,13 @@
 #include "OCREngine.h"
 #include "utils.h"
 
-#include <tesseract/baseapi.h>
-
 #include <iostream>
 #include <ctime>
 
 using namespace std;
 
 void parseHoughCircles(Mat& input, Mat& output);
-float calculateIndicatorPosition(vector<pair<Point, int>>& numberPoints, Point& indicatorLocation);
+float calculateIndicatorPosition(vector<pair<Point, int> >& numberPoints, Point& indicatorLocation);
 
 int numbers[] = { 60, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800};
 
@@ -77,7 +75,7 @@ float readResultFromPFM(Mat& inputImage) {
     vector<Rect> boundRect( contours.size() );
     /// Approximate contours to polygons + get bounding rects and circles
     vector<vector<Point> > contours_poly( contours.size() );
-    vector<pair<Point, int>> pointsWithNumbers(contours.size());
+    vector<pair<Point, int> > pointsWithNumbers(contours.size());
 #ifdef DEBUG
     imshow("filtered_gray", filtered_gray);
 #endif
@@ -106,79 +104,5 @@ float readResultFromPFM(Mat& inputImage) {
     cout << "elapsed time: " << elapsed_secs;
 #endif
     return calculateIndicatorPosition(pointsWithNumbers, indicatorPosition);
-}
-
-float calculateIndicatorPosition(vector<pair<Point, int>>& numberPoints, Point& indicatorLocation) {
-    sort(numberPoints.begin(), numberPoints.end(), compareByHeight);
-    int selectedIndex = 0;
-    for (int i = 0; i < numberPoints.size()-1; i++) {
-        if(numberPoints[i].first.y < indicatorLocation.y && numberPoints[i+1].first.y > indicatorLocation.y) {
-            selectedIndex=i;
-        }
-    }
-    float startInterval, endInterval;
-    startInterval = numberPoints[selectedIndex].first.y;
-    endInterval = numberPoints[selectedIndex + 1].first.y;
-    
-    float normalized = endInterval - startInterval;
-    
-    float percentage = (indicatorLocation.y-startInterval) / normalized;
-    
-    float resultAmount = (numberPoints[selectedIndex+1].second - numberPoints[selectedIndex].second) * percentage + numberPoints[selectedIndex].second;
-    cout << "interval: " << numberPoints[selectedIndex+1].second << ", min: " << numberPoints[selectedIndex].second << endl;
-    
-    cout << "resultAmount: " << resultAmount;
-    
-    
-    return resultAmount;
-}
-
-void parseHoughCircles(Mat& input, Mat& mask) {
-    vector<Vec3f> circles;
-    Mat coloredInput;
-    input.copyTo(coloredInput);
-    cvtColor(coloredInput, coloredInput, CV_GRAY2BGR);
-    Mat temp;
-    distanceTransform(input, temp, CV_DIST_L2, 3);
-    normalize(temp, temp, 0, 1., cv::NORM_MINMAX);
-    threshold(temp, temp, .5, 1., CV_THRESH_BINARY);
-    cv::Mat dist_8u;
-    temp.convertTo(dist_8u, CV_8U);
-    std::vector<std::vector<cv::Point> > contours;
-    cv::findContours(dist_8u, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
-    cv::Mat markers = cv::Mat::zeros(temp.size(), CV_32SC1);
-    int ncomp = contours.size();
-    for (int i = 0; i < contours.size(); i++)
-        cv::drawContours(markers, contours, i, cv::Scalar::all(i+1), -1);
-    circle(markers, cv::Point(5,5), 3, CV_RGB(255,255,255), -1);
-    watershed(coloredInput, markers);
-    
-    // Generate random colors
-    std::vector<cv::Vec3b> colors;
-    for (int i = 0; i < ncomp; i++)
-    {
-        int b = cv::theRNG().uniform(0, 255);
-        int g = cv::theRNG().uniform(0, 255);
-        int r = cv::theRNG().uniform(0, 255);
-        
-        colors.push_back(cv::Vec3b((uchar)b, (uchar)g, (uchar)r));
-    }
-    
-    // Create the result image
-    cv::Mat dst = cv::Mat::zeros(markers.size(), CV_8UC3);
-    
-    // Fill labeled objects with random colors
-    for (int i = 0; i < markers.rows; i++)
-    {
-        for (int j = 0; j < markers.cols; j++)
-        {
-            int index = markers.at<int>(i,j);
-            if (index > 0 && index <= ncomp)
-                dst.at<cv::Vec3b>(i,j) = colors[index-1];
-            else
-                dst.at<cv::Vec3b>(i,j) = cv::Vec3b(0,0,0);
-        }
-    }
-    
 }
 

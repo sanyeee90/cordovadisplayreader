@@ -46,7 +46,7 @@ void findBiggestBlob(cv::Mat &src, cv::Mat &dst, bool needExtra){
     Rect boundRect;
     src.copyTo(temp);
     
-    vector<vector<Point>> contours; // storing contour
+    vector<vector<Point> > contours; // storing contour
     vector<Vec4i> hierarchy;
     
     findContours( temp, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE );

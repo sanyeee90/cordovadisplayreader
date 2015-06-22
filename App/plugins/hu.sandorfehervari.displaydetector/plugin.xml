@@ -30,24 +30,26 @@
 
             <framework src="libstdc++.dylib"/>
 
-            <header-file src="src/ios/colour_based_extractor.h" />
-            <source-file src="src/ios/colour_based_extractor.cpp" />
-            <header-file src="src/ios/constants.h" />
+            <header-file src="src/common/algorithm.h" />
+            <source-file src="src/common/algorithm.cpp" />            
+            <header-file src="src/common/colour_based_extractor.h" />
+            <source-file src="src/common/colour_based_extractor.cpp" />
+            <header-file src="src/common/element_extraction.h" />
+            <source-file src="src/common/element_extraction.cpp" />
+            <header-file src="src/common/IndicatorValueDetector.h" />
+            <source-file src="src/common/IndicatorValueDetector.cpp" />
+            <header-file src="src/common/OCREngine.h" />
+            <header-file src="src/common/constants.h" />
+            <header-file src="src/common/utils.h" />
+            <source-file src="src/common/utils.cpp" />
             <header-file src="src/ios/DetectorAlgorithm.h" />
             <header-file src="src/ios/DisplayDetector.h" />
             <source-file src="src/ios/DisplayDetector.m" />
-            <header-file src="src/ios/element_extraction.h" />
-            <source-file src="src/ios/element_extraction.cpp" />
-            <header-file src="src/ios/IndicatorValueDetector.h" />
-            <source-file src="src/ios/IndicatorValueDetector.cpp" />
-            <header-file src="src/ios/OCREngine.h" />
-            <source-file src="src/ios/OCREngine.m" />
-            <header-file src="src/ios/preprocess_image.h" />
-            <source-file src="src/ios/preprocess_image.cpp" />
+            <source-file src="src/ios/OCREngine.mm" />
+            <header-file src="src/ios/OpenCVUtils.h" />
+            <source-file src="src/ios/OpenCVUtils.mm" />
             <header-file src="src/ios/ScaleDetector.h" />
             <source-file src="src/ios/ScaleDetector.mm" />            
-            <header-file src="src/ios/utils.h" />
-            <source-file src="src/ios/utils.cpp" />
 
             <framework src="tessdata" custom="true"/>
 

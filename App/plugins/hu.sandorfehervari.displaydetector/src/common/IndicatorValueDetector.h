@@ -11,6 +11,5 @@
 
 #import <opencv2/opencv.hpp>
 
-std::vector<std::pair<cv::Point, int> > readValueIntervals(cv::Mat& binaryImage, cv::Mat& filtered_gray);
-float calculateIndicatorPosition(std::vector<std::pair<cv::Point, int> > numberPoints, cv::Point indicatorLocation);
+float calculateIndicatorPosition(cv::vector<std::pair<cv::Point, int> >& numberPoints, cv::Point& indicatorLocation);
 #endif /* defined(__Analog_Display_Reader__IndicatorValueDetector__) */

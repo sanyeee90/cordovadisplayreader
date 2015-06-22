@@ -7,21 +7,27 @@
 //
 
 #include "OCREngine.h"
-
+#include <tesseract/baseapi.h>
 using namespace cv;
 
+struct TesseractImpl {
+    tesseract::TessBaseAPI *tesseractOCR;
+};
+
 OCREngine::OCREngine(Mat& inputmap) {
+    ocrEngine = new TesseractImpl();
+    ocrEngine->tesseractOCR = new tesseract::TessBaseAPI();
     this->inputImage = &inputmap;
-    ocrEngine.Init("/", "eng", tesseract::OEM_DEFAULT);
-    ocrEngine.SetVariable("tessedit_char_whitelist", "0123456789");
-    ocrEngine.SetPageSegMode(tesseract::PSM_SINGLE_BLOCK);
+    ocrEngine->tesseractOCR->Init("/", "eng", tesseract::OEM_DEFAULT);
+    ocrEngine->tesseractOCR->SetVariable("tessedit_char_whitelist", "0123456789");
+    ocrEngine->tesseractOCR->SetPageSegMode(tesseract::PSM_SINGLE_BLOCK);
 }
 
 int OCREngine::getNumberFromImage(const Rect& roi) {
     int number;
     Mat imgToDetect = this->inputImage->operator()(roi);
-    ocrEngine.TesseractRect( imgToDetect.data, 1, imgToDetect.step1(), 0, 0, imgToDetect.cols, imgToDetect.rows);
-    char* out = ocrEngine.GetUTF8Text();
+    ocrEngine->tesseractOCR->TesseractRect( imgToDetect.data, 1, imgToDetect.step1(), 0, 0, imgToDetect.cols, imgToDetect.rows);
+    char* out = ocrEngine->tesseractOCR->GetUTF8Text();
     sscanf(out, "%d", &number);
     return number;
 }

@@ -10,13 +10,14 @@
 #define __Csucsaramlasmero__OCREngine__
 
 #include <stdio.h>
-#include <tesseract/baseapi.h>
 #include <opencv2/core/core.hpp>
+
+struct TesseractImpl;
 
 class OCREngine {
 private:
     cv::Mat* inputImage;
-    tesseract::TessBaseAPI ocrEngine;
+    TesseractImpl* ocrEngine;
     
 public:
     OCREngine(cv::Mat&);
