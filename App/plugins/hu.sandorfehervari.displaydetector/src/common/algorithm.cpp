@@ -26,7 +26,7 @@ float calculateIndicatorPosition(vector<pair<Point, int> >& numberPoints, Point&
 
 int numbers[] = { 60, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650, 700, 800};
 
-float readResultFromPFM(Mat& inputImage) {
+float readResultFromPFM(Mat& inputImage, const char* tessDataDir) {
 #ifdef DEBUG
     clock_t begin = clock();
 #endif
@@ -80,7 +80,7 @@ float readResultFromPFM(Mat& inputImage) {
     imshow("filtered_gray", filtered_gray);
 #endif
     
-    OCREngine ocr(filtered_gray);
+    OCREngine ocr(filtered_gray, tessDataDir);
     for( int i = 0; i < contours.size(); i++ )
     {
         approxPolyDP( Mat(contours[i]), contours_poly[i], 3, true );

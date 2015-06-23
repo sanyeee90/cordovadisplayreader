@@ -14,7 +14,7 @@
 
 using namespace cv;
 
-float readResultFromPFM(Mat& inputImage);
+float readResultFromPFM(Mat& inputImage, const char* tessDataDir = "");
 
 
 #endif /* defined(__Csucsaramlasmero__algorithm__) */

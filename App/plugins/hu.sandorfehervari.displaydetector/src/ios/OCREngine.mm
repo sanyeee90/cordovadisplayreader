@@ -17,7 +17,7 @@ struct TesseractImpl {
     G8Tesseract *tesseract;
 };
 
-OCREngine::OCREngine(Mat& inputImage) {
+OCREngine::OCREngine(Mat& inputImage, const char* tessDataDict) {
     ocrEngine = new TesseractImpl();
     this->inputImage = &inputImage;
     ocrEngine->tesseract = [[G8Tesseract alloc] initWithLanguage:@"eng"];
