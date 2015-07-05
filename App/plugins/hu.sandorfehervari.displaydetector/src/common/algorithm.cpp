@@ -35,6 +35,13 @@ float readResultFromPFM(Mat& inputImage, const char* tessDataDir) {
     Mat gray;
     Mat filtered_gray;
     
+    cv::Size s = inputImage.size();
+    
+    if (isResizingRequired(s)) {
+        resize(inputImage, inputImage, calculateOptimalSize(s));
+    }
+
+    
     GaussianBlur(inputImage, blurred, Size(0,0), 3);
     addWeighted(inputImage, 1.5, blurred, -0.5, 0, inputImage);
     

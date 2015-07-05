@@ -12,8 +12,7 @@ extern "C" {
  * Method:    processImage
  * Signature: (Ljava/lang/String;)F
  */
-JNIEXPORT jfloat JNICALL Java_hu_sandorfehervari_analogdisplayreader_DisplayDetectorJNI_processImage
-  (JNIEnv *, jobject, jstring, jstring);
+JNIEXPORT jfloat JNICALL Java_hu_sandorfehervari_analogdisplayreader_DisplayDetectorJNI_processImage (JNIEnv *, jobject, jstring, jstring, jint);
 
 #ifdef __cplusplus
 }

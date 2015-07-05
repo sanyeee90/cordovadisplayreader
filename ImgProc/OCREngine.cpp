@@ -14,7 +14,7 @@ struct TesseractImpl {
     tesseract::TessBaseAPI *tesseractOCR;
 };
 
-OCREngine::OCREngine(Mat& inputmap) {
+OCREngine::OCREngine(Mat& inputmap, const char* tessDataDict) {
     ocrEngine = new TesseractImpl();
     ocrEngine->tesseractOCR = new tesseract::TessBaseAPI();
     this->inputImage = &inputmap;

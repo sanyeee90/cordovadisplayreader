@@ -68,11 +68,11 @@ var App = angular.module("dispreader", ["ionic", "dispreader.services"])
                 },
                 function (err) {
                     $scope.processError=true;
-                    console.err('Error' + err);
+                    console.log('Error' + err);
                 });
           }, function(err) {
             $scope.processError=true;
-            console.err(err);
+            console.log(err);
           }, {
             quality: 75,
             targetWidth: 320,

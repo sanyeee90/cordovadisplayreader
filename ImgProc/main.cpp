@@ -62,7 +62,7 @@ int main_range() {
 
 int main(){
     //Mat box = imread("img/pfm20det.png");
-    Mat box = imread("img/pfm20_amazon.jpg");
+    Mat box = imread("img/947553246562.jpg");
     readResultFromPFM(box);
 
     waitKey(0);

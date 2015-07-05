@@ -21,6 +21,8 @@ static const Scalar YELLOW_RANGE_END(36,255,255);
 
 static const float NUMBER_FIELD_EXTRA_PERCENT = 0.05f;
 
+static const int OPTIMAL_IMAGE_SIZE = 1280;
+
 //static const Matx<uint, 3, 3> INDICATOR_ERODE_KERNEL(0,1,0,1,1,1,0,1,0);
 
 #endif

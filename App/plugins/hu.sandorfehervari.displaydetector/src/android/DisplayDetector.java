@@ -22,6 +22,8 @@ package hu.sandorfehervari.analogdisplayreader;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.content.res.AssetManager;
+import android.media.ExifInterface;
+import android.net.Uri;
 import android.os.Environment;
 import android.util.Log;
 import org.apache.cordova.CallbackContext;
@@ -33,6 +35,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
+import java.net.URI;
 
 public class DisplayDetector extends CordovaPlugin
 {
@@ -72,10 +75,10 @@ public class DisplayDetector extends CordovaPlugin
         tessDataFile = sharedPrefs.getString(TESSDATA_PATH, "");
 
         if ("".equals(tessDataFile) || !isFileAlreadyCopied(tessDataFile)) {
-                tessDataFile = copyDataToStorage();
-                SharedPreferences.Editor editor = sharedPrefs.edit();
-                editor.putString(TESSDATA_PATH, tessDataFile);
-                editor.commit();
+            tessDataFile = copyDataToStorage();
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putString(TESSDATA_PATH, tessDataFile);
+            editor.commit();
         }
 
     }
@@ -129,44 +132,69 @@ public class DisplayDetector extends CordovaPlugin
      * Executes the request and returns PluginResult.
      *
      * @param action            The action to execute.
-     * @param args              JSONArry of arguments for the plugin.rvarisandor/Szakdolgozat/App/platforms/android/ant-build
-    [move] Moving 1 file to /Users/fehervarisandor/Szakdolgozat/App/platforms/android/CordovaLib/ant-build
-
-    debug:
-
-    BUILD SUCCESSFUL
+     * @param args              JSONArry of arguments for the plugin.
      * @param callbackContext   The callback id used when calling back into JavaScript.
      * @return                  True if the action was valid, false if not.
      */
     public boolean execute(String action, JSONArray args, CallbackContext callbackContext) throws JSONException {
 
         if (action.equals("processImage")) {
-            cordova.getThreadPool().execute(new Runnable() {
-                public void run() {
-                    if ("".equals(tessDataFile)) {
-                        callbackContext.error("failed initialize the detector plugin");
-                        return true;
-                    }
-
-                    File fileToProcess = new File(args.getString(0));
-                    if (!fileToProcess.exists()) {
-                        callbackContext.error("failed to load the input image.");
-                        return true;
-                    }
-
-                    JSONObject result = new JSONObject();
-
-                    result.put("value", new DisplayDetectorJNI().processImage(args.getString(0), tessDataFile));
-
-                    result.put("success", true);
-                    callbackContext.success(result);
+            Log.i(TAG, args.toString());
+            String fileName = args.getString(1);
+            File fileToProcess = null;
+            if (tessDataFile.isEmpty()) {
+                callbackContext.error("failed initialize the detector plugin");
+                return true;
+            }
+            try {
+                String normalizedFilePath = getNormalizedFilePath(fileName);
+                int imageOrientation = ExifInterface.ORIENTATION_UNDEFINED;
+                if (normalizedFilePath.toLowerCase().endsWith(".jpg") || normalizedFilePath.toLowerCase().endsWith(".jpeg")) {
+                    imageOrientation = getOrientation(normalizedFilePath);
                 }
-            });
 
+
+                fileToProcess = new File(normalizedFilePath);
+                if (!fileToProcess.exists()) {
+                    callbackContext.error("failed to load the input image.");
+                    return true;
+                }
+                JSONObject result = new JSONObject();
+                result.put("value", new DisplayDetectorJNI().processImage(args.getString(0), tessDataFile, imageOrientation));
+
+                result.put("success", true);
+                callbackContext.success(result);
+            } catch (AssertionError ex) {
+                callbackContext.error("the filename was null!");
+                return true;
+            }
+            return true;
         } else {
             return false;
         }
-        return true;
     }
+
+    private String getNormalizedFilePath(String inputFilePath) {
+        String retValue = inputFilePath;
+        assert inputFilePath != null;
+        if (inputFilePath.startsWith("file://")) {
+            retValue = Uri.parse(inputFilePath).getPath();
+        }
+        return retValue;
+    }
+
+    private int getOrientation(String inputImage) {
+        ExifInterface exif = null;
+        try {
+            exif = new ExifInterface(inputImage);
+        } catch (IOException e) {
+            Log.e(TAG, "Failed to red exif information from image.");
+            e.printStackTrace();
+        }
+        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                ExifInterface.ORIENTATION_UNDEFINED);
+        return orientation;
+    }
+
 
 }

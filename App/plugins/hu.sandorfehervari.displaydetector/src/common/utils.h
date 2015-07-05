@@ -17,4 +17,8 @@ cv::Point calculateCenterOfRectangle(cv::Rect rectangle);
 
 void findBiggestBlob(cv::Mat &src, cv::Mat &dst, bool needExtra = false);
 
+bool isResizingRequired(cv::Size& imageSize);
+
+cv::Size calculateOptimalSize(const cv::Size& image);
+
 #endif /* defined(__Csucsaramlasmero__utils__) */

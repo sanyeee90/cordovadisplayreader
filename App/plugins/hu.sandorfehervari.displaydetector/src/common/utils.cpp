@@ -77,3 +77,32 @@ void findBiggestBlob(cv::Mat &src, cv::Mat &dst, bool needExtra){
     }
 
 }
+
+bool isResizingRequired(cv::Size& imageSize) {
+    if (imageSize.width > OPTIMAL_IMAGE_SIZE || imageSize.height > OPTIMAL_IMAGE_SIZE) {
+        return true;
+    }
+    return false;
+}
+
+cv::Size calculateOptimalSize(const cv::Size& imageSize) {
+    Size retValue;
+    float aspectRatio = 0.0f;
+    if (imageSize.height == 0 || imageSize.width == 0) {
+        return retValue;
+    }
+    // landscape case
+    if (imageSize.width > imageSize.height) {
+        aspectRatio = imageSize.width / (float)imageSize.height;
+        retValue.width = OPTIMAL_IMAGE_SIZE;
+        retValue.height = OPTIMAL_IMAGE_SIZE / aspectRatio;
+    //portrait and square cases
+    } else {
+        aspectRatio =imageSize.height / (float)imageSize.width;
+        retValue.height = OPTIMAL_IMAGE_SIZE;
+        retValue.width = OPTIMAL_IMAGE_SIZE / aspectRatio;
+    }
+    return retValue;
+    
+}
+
