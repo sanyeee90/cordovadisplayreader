@@ -27,7 +27,6 @@ Point extractIndicator(Mat& hsvInputImage) {
     bitwise_or(lower_red, upper_red, extracted);
     Mat kernel = getStructuringElement(MORPH_ELLIPSE,Size(3,3));
     morphologyEx(extracted, extracted, MORPH_CLOSE, kernel);
-    char name[40];
 
     cv::Mat b = (cv::Mat_<uchar>(3,3) << 0,1,0,1,1,1,0,1,1);
     for(int i=0; i < 8; i++){
@@ -60,40 +59,68 @@ Point extractIndicator(Mat& hsvInputImage) {
 }
 
 
-void extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst) {
+Rect extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst) {
     Mat extractedColor(hsvInputImage.size(), CV_8U);
     ColourBasedExtractor colourExtractor(YELLOW_RANGE_START, YELLOW_RANGE_END);
     
     colourExtractor.ExtractColour(hsvInputImage, extractedColor);
-    findBiggestBlob(extractedColor, dst, true);
+    return findBiggestBlob(extractedColor, dst, true);
 }
 
-void extractNumberFields(cv::Mat& grayInputImage, cv::Mat& dst) {
-    int allContours = -1;
-    int thickness = 2;
+double calculatePercentage(double value, double baseline) {
+    return value / baseline * 100.0f;
+}
+
+void mergeOverlappingBoxes(std::vector<cv::Rect> &inputBoxes, cv::Mat &image, std::vector<cv::Rect> &outputBoxes)
+{
+    cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1); // Mask of original image
+    cv::Size scaleFactor(5,0); // To expand rectangles, i.e. increase sensitivity to nearby rectangles. Doesn't have to be (10,10)--can be anything
+    for (int i = 0; i < inputBoxes.size(); i++)
+    {
+        cv::Rect box = inputBoxes.at(i) + scaleFactor;
+        cv::rectangle(mask, box, cv::Scalar(255), CV_FILLED); // Draw filled bounding boxes on mask
+    }
+    std::vector<std::vector<cv::Point>> contours;
+    // Find contours in mask
+    // If bounding boxes overlap, they will be joined by this function call
+    cv::findContours(mask, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    for (int j = 0; j < contours.size(); j++)
+    {
+        outputBoxes.push_back(cv::boundingRect(contours.at(j)));
+    }
+    
+    mask.release();
+}
+
+void transformCoordinatesWithBaseline(const cv::Rect baseline, vector<cv::Rect>& boundingBoxes) {
+    for (int i=0; i<boundingBoxes.size(); i++) {
+        Rect boundingBox = boundingBoxes[i];
+        boundingBox.x += baseline.x;
+        boundingBox.y += baseline.y;
+        boundingBoxes[i] = boundingBox;
+    }
+}
+
+void extractNumberFields(cv::Mat& grayInputImage, cv::Rect& numberPlatePlacement, cv::Mat& dst, vector<cv::Rect>& boundingBoxes) {
     Mat output;
-    threshold(grayInputImage, output, 90, 255, THRESH_BINARY);
-    cv::Mat b = (cv::Mat_<uchar>(3,3) << 0,1,0,1,1,1,0,1,1);
+    cv::Mat roi = grayInputImage(numberPlatePlacement);
+    cv::Mat mask = cv::Mat::zeros(roi.size(), CV_8UC1);
 
-        erode(output, output, b);
-
-    GaussianBlur(grayInputImage, grayInputImage, Size(3,3), 3);
-    Mat masked;
-    grayInputImage.copyTo(masked);
-    imshow("new", masked);
-    MSER ms(7,100,1000);
+    threshold(roi, output, 90, 255, THRESH_BINARY_INV);
     vector<vector <Point> > regions;
-    ms(masked, regions);
-    drawContours(dst, regions, allContours, Scalar::all(255), thickness);
-    bitwise_not(dst, dst);
-    
-    int morph_size = 1;
-    Mat element = getStructuringElement( MORPH_ELLIPSE, Size( 2*morph_size + 1, 2*morph_size+1 ) );
-    morphologyEx( dst, dst, MORPH_OPEN, element, Point(-1,-1), 1 );
-    morphologyEx( dst, dst, MORPH_CLOSE, element, Point(-1,-1), 1 );
-    
-    bitwise_not(dst, dst);
-    imshow("dst", dst);
+    vector<Rect> rectangles;
+    findContours(output, regions, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
+    for (int i=0; i<regions.size(); i++) {
+        Rect boundingBox = boundingRect(regions[i]);
+        if (calculatePercentage(boundingBox.height, grayInputImage.size().height) > 1.08) {
+            rectangles.push_back(boundingBox);
+        }
+    }
+    mergeOverlappingBoxes(rectangles, mask, boundingBoxes);
+    transformCoordinatesWithBaseline(numberPlatePlacement, boundingBoxes);
+    mask.copyTo(dst);
+    output.release();
+    mask.release();
 }
 
 void parseHoughCircles(Mat& input, Mat& mask) {

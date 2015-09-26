@@ -12,8 +12,6 @@
 #include <iostream>
 #include "algorithm.h"
 
-
-
 int main_range() {
     Mat box_amazon = imread("img/pfm20_amazon.jpg");
     Mat box_straight = imread("img/pfm20_straight.png");
@@ -62,9 +60,9 @@ int main_range() {
 
 int main(){
     //Mat box = imread("img/pfm20det.png");
-    Mat box = imread("img/947553246562.jpg");
-    readResultFromPFM(box);
-
+    Mat box = imread("img/IMG_1322.png");
+    float result = readResultFromPFM(box);
+    printf("result: %f\n", result);
     waitKey(0);
 
     return 0;

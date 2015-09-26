@@ -21,8 +21,9 @@ angular.module('dispreader.services', [])
 .factory('DisplayReaderService', ['$q', function($q) {
   return {
     processImage: function(imageUrl) {
+      var imagePath = imageUrl.replace(/.*?:\/\//g, "");
       var q = $q.defer();
-      cordova.plugins.DisplayDetector.processImage(imageUrl,
+      cordova.plugins.DisplayDetector.processImage(imagePath,
           function(result) {
             q.reject(result);
           }, function(error) {

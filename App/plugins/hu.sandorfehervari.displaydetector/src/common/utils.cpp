@@ -39,7 +39,7 @@ int calculateBoundaryExtra(const Rect& rectToCalculate, const Size& imgDimension
     }
 }
 
-void findBiggestBlob(cv::Mat &src, cv::Mat &dst, bool needExtra){
+Rect findBiggestBlob(cv::Mat &src, cv::Mat &dst, bool needExtra){
     int largest_area=0;
     int largest_contour_index=0;
     Mat temp(src.rows,src.cols,CV_8UC1);
@@ -75,6 +75,7 @@ void findBiggestBlob(cv::Mat &src, cv::Mat &dst, bool needExtra){
         rectangle( dst, boundRect.tl(), boundRect.br(), Scalar(255), CV_FILLED, 8, 0 );
         // Draw the largest contour
     }
+    return boundRect;
 
 }
 
