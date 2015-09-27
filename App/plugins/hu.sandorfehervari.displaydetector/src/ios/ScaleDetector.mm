@@ -16,7 +16,6 @@
     float retValue = 0.0f;
     
     cv::Mat imageToProcess = [OpenCVUtils cvMatFromUIImage:image];
-    
     retValue = readResultFromPFM(imageToProcess);
     
     return retValue;

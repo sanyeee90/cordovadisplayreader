@@ -30,7 +30,7 @@ void preprocessImage() {
     
 }
 
-float readResultFromPFM(Mat& inputImage, const char* tessDataDir) {
+float readResultFromPFM(Mat& input, const char* tessDataDir) {
 #ifdef DEBUG
     clock_t begin = clock();
 #endif
@@ -38,7 +38,7 @@ float readResultFromPFM(Mat& inputImage, const char* tessDataDir) {
     Mat hsvImage;
     Mat gray;
     Mat filtered_gray;
-    
+    Mat inputImage = input.clone();
     cv::Size s = inputImage.size();
     
     if (isResizingRequired(s)) {
@@ -54,7 +54,6 @@ float readResultFromPFM(Mat& inputImage, const char* tessDataDir) {
     
     // ---- INDICATOR, NUMBER_PLATE START ---- //
     Point indicatorPosition = extractIndicator(hsvImage);
-    circle(inputImage, indicatorPosition, 10, Scalar(255,0,0));
     Mat bigestYellowBlob(hsvImage.size(), CV_8U, cvScalar(0));
     Rect numberPlatePlacement = extractNumberPlate(hsvImage, bigestYellowBlob);
     
@@ -79,14 +78,16 @@ float readResultFromPFM(Mat& inputImage, const char* tessDataDir) {
     // BOUNDARY OF NUMBERS //
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
-    findContours(binary, contours, hierarchy, RETR_EXTERNAL,  CHAIN_APPROX_SIMPLE, Point(0, 0) );
     // BOUNDARY OF NUMBERS END //
     /// Approximate contours to polygons + get bounding rects and circles
     vector<pair<Point, int> > pointsWithNumbers(boundRect.size());
 #ifdef DEBUG
     imshow("filtered_gray", filtered_gray);
 #endif
-    
+    vector<pair<Point, int> > pointsWithNumbers;
+    if (boundRect.empty()) {
+        return NUMBERS_EMPTY_RESULT;
+    }
     OCREngine ocr(filtered_gray, tessDataDir);
     for( int i = 0; i < boundRect.size(); i++ )
     {
@@ -99,7 +100,7 @@ float readResultFromPFM(Mat& inputImage, const char* tessDataDir) {
         int number = ocr.getNumberFromImage(boundRect[i]);
         sprintf(szamok, "%d\n", number);
         cout << szamok;
-        pointsWithNumbers[i] = pair<Point,int>(calculateCenterOfRectangle(boundRect[i]), number);
+        pointsWithNumbers.push_back(pair<Point,int>(calculateCenterOfRectangle(boundRect[i]), number));
     }
 #ifdef DEBUG
     imshow("thresh_grey", inputImage);
@@ -109,6 +110,7 @@ float readResultFromPFM(Mat& inputImage, const char* tessDataDir) {
     cout << "elapsed time: " << elapsed_secs;
 #endif
     //return 0;
+    inputImage.release();
     return calculateIndicatorPosition(pointsWithNumbers, indicatorPosition);
 }
 

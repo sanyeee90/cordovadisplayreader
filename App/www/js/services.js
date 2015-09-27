@@ -25,7 +25,7 @@ angular.module('dispreader.services', [])
       var q = $q.defer();
       cordova.plugins.DisplayDetector.processImage(imagePath,
           function(result) {
-            q.reject(result);
+            q.resolve(result);
           }, function(error) {
             q.reject(error);
           });
@@ -33,12 +33,12 @@ angular.module('dispreader.services', [])
     }
   }
 }])
-.factory('CameraSrvStub', ['$q', function($q) {
+.factory('CameraSrv', ['$q', function($q) {
 
   return {
     getPicture: function(options) {
       var q = $q.defer();
-      q.resolve("www/img/pfm20det.png");
+      q.resolve("www/img/IMG_1322.JPG");
       return q.promise;
     }
   }

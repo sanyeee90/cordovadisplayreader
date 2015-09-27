@@ -20,6 +20,7 @@ private:
     TesseractImpl* ocrEngine;
     char* tessDataDir;
 public:
+    ~OCREngine();
     OCREngine(cv::Mat&, const char* tessDataDir);
     int getNumberFromImage(const cv::Rect& roi);
     

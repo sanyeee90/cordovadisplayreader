@@ -51,7 +51,6 @@ Point extractIndicator(Mat& hsvInputImage) {
             }
         }
         hsvInputImage.copyTo(temp);
-        circle(temp, mostLeftPoint, 4, Scalar(255));
         return mostLeftPoint;
     }
     Point pt;

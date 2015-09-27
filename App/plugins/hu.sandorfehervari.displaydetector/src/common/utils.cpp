@@ -50,7 +50,6 @@ Rect findBiggestBlob(cv::Mat &src, cv::Mat &dst, bool needExtra){
     vector<Vec4i> hierarchy;
     
     findContours( temp, contours, hierarchy, RETR_CCOMP, CHAIN_APPROX_SIMPLE );
-    imshow("dstbefore", temp);
     for( int i = 0; i< contours.size(); i++ ) // iterate
     {
         double a=contourArea( contours[i],false);  //Find the largest area of contour

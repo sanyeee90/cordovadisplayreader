@@ -23,6 +23,14 @@ OCREngine::OCREngine(Mat& inputmap, const char* tessDataDict) {
     ocrEngine->tesseractOCR->SetPageSegMode(tesseract::PSM_SINGLE_BLOCK);
 }
 
+OCREngine::~OCREngine() {
+    if (ocrEngine) {
+        delete ocrEngine->tesseractOCR;
+    }
+
+    delete ocrEngine;
+}
+
 int OCREngine::getNumberFromImage(const Rect& roi) {
     int number;
     Mat imgToDetect = this->inputImage->operator()(roi);

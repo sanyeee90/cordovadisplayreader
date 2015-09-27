@@ -11,7 +11,7 @@
 
 #include <iostream>
 #include "algorithm.h"
-
+#undef DEBUG
 int main_range() {
     Mat box_amazon = imread("img/pfm20_amazon.jpg");
     Mat box_straight = imread("img/pfm20_straight.png");
@@ -47,11 +47,6 @@ int main_range() {
     imshow("lowres", lowres);
     imshow("straight_nonsharp", straight_nonsharp);
     
-    /*extractIndicator(box_amazon_hsv, "pfm20_amazon.jpg");
-    extractIndicator(box_straight_hsv, "pfm20_straight.png");
-    extractIndicator(box_shapred_hsv, "pfm20_sharped.png");
-    extractIndicator(box_lowres_hsv, "pfm20.png");
-    extractIndicator(box_straight_nonsharp_hsv, "pfm20det_straight.png");*/
     waitKey(0);
     return 0;
 }
@@ -63,8 +58,7 @@ int main(){
     Mat box = imread("img/IMG_1322.png");
     float result = readResultFromPFM(box);
     printf("result: %f\n", result);
-    waitKey(0);
-
+    sleep(60);
     return 0;
 
 
