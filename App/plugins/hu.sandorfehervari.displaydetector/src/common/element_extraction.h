@@ -11,8 +11,11 @@
 
 #include "opencv2/core/core.hpp"
 using namespace cv;
-Point extractIndicator(Mat& hsvInput);
+
+Point calculateRectangleCenter(const Rect&);
+Rect extractIndicator(Mat& hsvInput);
 Rect extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst);
-void extractNumberFields(cv::Mat& grayInputImage, cv::Rect& numberPlatePlacement, cv::Mat& dst, vector<cv::Rect>& boundingBoxes);
+void transformCoordinatesWithBaseline(const cv::Rect baseline, vector<cv::Rect>& boundingBoxes);
+void extractNumberFields(cv::Mat& grayInputImage, cv::Rect& numberPlatePlacement, vector<cv::Rect>& boundingBoxes);
 void parseHoughCircles(Mat& input, Mat& output);
 #endif /* defined(__Csucsaramlasmero__element_extraction__) */

@@ -13,6 +13,6 @@
 using namespace cv;
 Point extractIndicator(Mat& hsvInput);
 void extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst);
-void extractNumberFields(cv::Mat& grayInputImage, cv::Mat& dst, vector<cv::Rect>& boundingBoxes);
+void extractNumberFields(cv::Mat& grayInputImage, vector<cv::Rect>& boundingBoxes);
 
 #endif /* defined(__Csucsaramlasmero__element_extraction__) */

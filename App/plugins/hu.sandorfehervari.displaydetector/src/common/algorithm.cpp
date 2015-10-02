@@ -15,7 +15,7 @@
 #include "element_extraction.h"
 #include "OCREngine.h"
 #include "utils.h"
-
+#include "constants.h"
 #include <iostream>
 #include <ctime>
 
@@ -29,6 +29,8 @@ int numbers[] = { 60, 100, 150, 200, 250, 300, 350, 400, 450, 500, 550, 600, 650
 void preprocessImage() {
     
 }
+
+
 
 float readResultFromPFM(Mat& input, const char* tessDataDir) {
 #ifdef DEBUG
@@ -53,23 +55,32 @@ float readResultFromPFM(Mat& input, const char* tessDataDir) {
     cvtColor(inputImage, gray, COLOR_RGB2GRAY);
     
     // ---- INDICATOR, NUMBER_PLATE START ---- //
-    Point indicatorPosition = extractIndicator(hsvImage);
-    Mat bigestYellowBlob(hsvImage.size(), CV_8U, cvScalar(0));
-    Rect numberPlatePlacement = extractNumberPlate(hsvImage, bigestYellowBlob);
+    Rect indicatorRect = extractIndicator(hsvImage);
+    Point indicatorPosition = calculateCenterOfRectangle(indicatorRect);
     
     // ---- INDICATOR, NUMBER_PLATE END ---- //
     
-    // ---- NUMBER FIELDS START ---- //
-    gray.copyTo(filtered_gray, bigestYellowBlob);
-    Mat binary(gray.size(), CV_8U, cvScalar(0));
-    vector<Rect> boundRect;
-    extractNumberFields(filtered_gray, numberPlatePlacement, binary, boundRect);
+    
+    Rect roiAroundIndicator(0, indicatorRect.tl().y-indicatorRect.height*2, inputImage.size().width, indicatorRect.height*5);
+    Mat interestedImageAroundIndicatorHSV = hsvImage(roiAroundIndicator);
+    Mat interestedImageAroundIndicatorGray = gray(roiAroundIndicator);
+    Point updatedIndicatorPosition(0,roiAroundIndicator.height/2);
+    
+    
+    Mat interestedAreaNumberPlateMat(interestedImageAroundIndicatorHSV.size(), CV_8U);
+    
+    Rect interestedNumberPlate = extractNumberPlate(interestedImageAroundIndicatorHSV, interestedAreaNumberPlateMat);
 
-    //parseHoughCircles(binary,binary);
-    // ---- NUMBER FIELDS END ---- //
-    // ---- NUMBERS START ---- //
-    //cv::Mat b = (cv::Mat_<uchar>(3,3) << 1,1,0,0,1,0,0,1,1);
-    //threshold(filtered_gray, filtered_gray, 100, 180, THRESH_BINARY);
+    // ---- NUMBER FIELDS START ---- //
+    interestedImageAroundIndicatorGray.copyTo(filtered_gray, interestedAreaNumberPlateMat);
+    
+    vector<Rect> boundRect;
+    extractNumberFields(filtered_gray, interestedNumberPlate, boundRect);
+    transformCoordinatesWithBaseline(interestedNumberPlate, boundRect);
+    imshow("orig", interestedImageAroundIndicatorHSV);
+    
+    circle(inputImage, indicatorPosition, 5, Scalar(0,255,0));
+    
     bitwise_not(filtered_gray, filtered_gray);
     // ---- NUMBERS END ---- //
 #ifdef DEBUG
@@ -80,7 +91,6 @@ float readResultFromPFM(Mat& input, const char* tessDataDir) {
     vector<Vec4i> hierarchy;
     // BOUNDARY OF NUMBERS END //
     /// Approximate contours to polygons + get bounding rects and circles
-    vector<pair<Point, int> > pointsWithNumbers(boundRect.size());
 #ifdef DEBUG
     imshow("filtered_gray", filtered_gray);
 #endif
@@ -88,6 +98,7 @@ float readResultFromPFM(Mat& input, const char* tessDataDir) {
     if (boundRect.empty()) {
         return NUMBERS_EMPTY_RESULT;
     }
+    
     OCREngine ocr(filtered_gray, tessDataDir);
     for( int i = 0; i < boundRect.size(); i++ )
     {
@@ -95,8 +106,6 @@ float readResultFromPFM(Mat& input, const char* tessDataDir) {
 #ifdef DEBUG
         rectangle(inputImage, boundRect[i].tl(), boundRect[i].br(), Scalar(255,0,255));
 #endif
-
-        
         int number = ocr.getNumberFromImage(boundRect[i]);
         sprintf(szamok, "%d\n", number);
         cout << szamok;
@@ -104,13 +113,12 @@ float readResultFromPFM(Mat& input, const char* tessDataDir) {
     }
 #ifdef DEBUG
     imshow("thresh_grey", inputImage);
-    imshow("inputImage", binary);
     clock_t end = clock();
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     cout << "elapsed time: " << elapsed_secs;
 #endif
     //return 0;
     inputImage.release();
-    return calculateIndicatorPosition(pointsWithNumbers, indicatorPosition);
+    return calculateIndicatorPosition(pointsWithNumbers, updatedIndicatorPosition);
 }
 

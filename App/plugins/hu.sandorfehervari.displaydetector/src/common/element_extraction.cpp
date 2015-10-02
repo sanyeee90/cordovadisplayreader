@@ -8,7 +8,6 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
-#include <opencv2/highgui/highgui.hpp>
 
 #include "element_extraction.h"
 #include "colour_based_extractor.h"
@@ -18,43 +17,27 @@
 using namespace cv;
 using namespace std;
 
-Point extractIndicator(Mat& hsvInputImage) {
+Point calculateRectangleCenter(const Rect& rectangle) {
+    Point center(rectangle.x + rectangle.width/2, rectangle.y + rectangle.height /2);
+    return center;
+}
+
+Rect extractIndicator(Mat& hsvInputImage) {
     Mat extracted, lower_red, upper_red, lines;
-    ColourBasedExtractor lowerRed(Scalar(0,176,139), Scalar(4,243,181));
+    ColourBasedExtractor lowerRed(Scalar(0,140,100), Scalar(3,255,230));
     lowerRed.ExtractColour(hsvInputImage, lower_red);
-    ColourBasedExtractor upperRed(Scalar(168,160,138), Scalar(179,255,255));
+    ColourBasedExtractor upperRed(Scalar(168,140,100), Scalar(180,255,255));
     upperRed.ExtractColour(hsvInputImage, upper_red);
     bitwise_or(lower_red, upper_red, extracted);
-    Mat kernel = getStructuringElement(MORPH_ELLIPSE,Size(3,3));
+    lower_red.release();
+    upper_red.release();
+    Mat kernel = getStructuringElement(MORPH_ELLIPSE,Size(5,5));
     morphologyEx(extracted, extracted, MORPH_CLOSE, kernel);
 
     cv::Mat b = (cv::Mat_<uchar>(3,3) << 0,1,0,1,1,1,0,1,1);
-    for(int i=0; i < 8; i++){
-        erode(extracted, extracted, b);
-    }
-    Mat blob(extracted.size(), CV_8U);
-    findBiggestBlob(extracted, blob);
-    Canny(extracted, lines, 20, 20*3);
-    
-    vector<vector<Point> > contours;
-    vector<Vec4i> hierarchy;
-    findContours(lines, contours, hierarchy, RETR_EXTERNAL,  CHAIN_APPROX_SIMPLE, Point(0, 0) );
-    Mat temp(extracted.size(), CV_8U);
-    if (contours.size() > 0) {
-        Point mostLeftPoint(contours[0][0]);
-        for (int i = 0; i<contours.size(); i++) {
-            approxPolyDP(contours[i], contours[i], 2, true);
-            for (int j = 0; j < contours[i].size(); j++) {
-                if (mostLeftPoint.x > contours[i][j].x) {
-                    mostLeftPoint = contours[i][j];
-                }
-            }
-        }
-        hsvInputImage.copyTo(temp);
-        return mostLeftPoint;
-    }
-    Point pt;
-    return pt;
+    erode(extracted, extracted, b, Point(-1,-1), 3);
+
+    return findBiggestBlob(extracted);
 }
 
 
@@ -63,7 +46,10 @@ Rect extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst) {
     ColourBasedExtractor colourExtractor(YELLOW_RANGE_START, YELLOW_RANGE_END);
     
     colourExtractor.ExtractColour(hsvInputImage, extractedColor);
-    return findBiggestBlob(extractedColor, dst, true);
+    
+    Rect plate = findBiggestBlob(extractedColor, true);
+    rectangle( dst, plate.tl(), plate.br(), Scalar(255), CV_FILLED, 8, 0 );
+    return plate;
 }
 
 double calculatePercentage(double value, double baseline) {
@@ -79,7 +65,7 @@ void mergeOverlappingBoxes(std::vector<cv::Rect> &inputBoxes, cv::Mat &image, st
         cv::Rect box = inputBoxes.at(i) + scaleFactor;
         cv::rectangle(mask, box, cv::Scalar(255), CV_FILLED); // Draw filled bounding boxes on mask
     }
-    std::vector<std::vector<cv::Point>> contours;
+    std::vector<std::vector<cv::Point> > contours;
     // Find contours in mask
     // If bounding boxes overlap, they will be joined by this function call
     cv::findContours(mask, contours, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
@@ -87,7 +73,6 @@ void mergeOverlappingBoxes(std::vector<cv::Rect> &inputBoxes, cv::Mat &image, st
     {
         outputBoxes.push_back(cv::boundingRect(contours.at(j)));
     }
-    
     mask.release();
 }
 
@@ -100,24 +85,22 @@ void transformCoordinatesWithBaseline(const cv::Rect baseline, vector<cv::Rect>&
     }
 }
 
-void extractNumberFields(cv::Mat& grayInputImage, cv::Rect& numberPlatePlacement, cv::Mat& dst, vector<cv::Rect>& boundingBoxes) {
+void extractNumberFields(cv::Mat& grayInputImage, cv::Rect& numberPlatePlacement, vector<cv::Rect>& boundingBoxes) {
     Mat output;
     cv::Mat roi = grayInputImage(numberPlatePlacement);
     cv::Mat mask = cv::Mat::zeros(roi.size(), CV_8UC1);
-
     threshold(roi, output, 90, 255, THRESH_BINARY_INV);
     vector<vector <Point> > regions;
     vector<Rect> rectangles;
     findContours(output, regions, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
     for (int i=0; i<regions.size(); i++) {
         Rect boundingBox = boundingRect(regions[i]);
-        if (calculatePercentage(boundingBox.height, grayInputImage.size().height) > 1.08) {
+        printf("%f\n", calculatePercentage(boundingBox.height, grayInputImage.size().height));
+        if (calculatePercentage(boundingBox.height, grayInputImage.size().height) > 10) {
             rectangles.push_back(boundingBox);
         }
     }
     mergeOverlappingBoxes(rectangles, mask, boundingBoxes);
-    transformCoordinatesWithBaseline(numberPlatePlacement, boundingBoxes);
-    mask.copyTo(dst);
     output.release();
     mask.release();
 }

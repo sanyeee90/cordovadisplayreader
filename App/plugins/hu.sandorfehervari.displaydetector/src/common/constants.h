@@ -16,7 +16,7 @@ using namespace cv;
 static const Scalar RED_RANGE_START(0,90,130);
 static const Scalar RED_RANGE_END(12,255,241);
 
-static const Scalar YELLOW_RANGE_START(24,100,100);
+static const Scalar YELLOW_RANGE_START(23,100,80);
 static const Scalar YELLOW_RANGE_END(36,255,255);
 
 static const float NUMBER_FIELD_EXTRA_PERCENT = 0.05f;

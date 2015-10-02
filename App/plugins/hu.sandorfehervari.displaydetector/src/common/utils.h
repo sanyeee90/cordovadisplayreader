@@ -15,7 +15,7 @@ bool compareByHeight(std::pair<cv::Point, int> p1, std::pair<cv::Point, int> p2)
 
 cv::Point calculateCenterOfRectangle(cv::Rect rectangle);
 
-cv::Rect findBiggestBlob(cv::Mat &src, cv::Mat &dst, bool needExtra = false);
+cv::Rect findBiggestBlob(cv::Mat &src, bool needExtra = false);
 
 bool isResizingRequired(cv::Size& imageSize);
 
