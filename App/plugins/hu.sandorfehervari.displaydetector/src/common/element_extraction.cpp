@@ -44,7 +44,6 @@ Rect extractIndicator(Mat& hsvInputImage) {
 Rect extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst) {
     Mat extractedColor(hsvInputImage.size(), CV_8U);
     ColourBasedExtractor colourExtractor(YELLOW_RANGE_START, YELLOW_RANGE_END);
-    
     colourExtractor.ExtractColour(hsvInputImage, extractedColor);
     
     Rect plate = findBiggestBlob(extractedColor, true);
@@ -96,7 +95,7 @@ void extractNumberFields(cv::Mat& grayInputImage, cv::Rect& numberPlatePlacement
     for (int i=0; i<regions.size(); i++) {
         Rect boundingBox = boundingRect(regions[i]);
         printf("%f\n", calculatePercentage(boundingBox.height, grayInputImage.size().height));
-        if (calculatePercentage(boundingBox.height, grayInputImage.size().height) > 10) {
+        if (calculatePercentage(boundingBox.height, grayInputImage.size().height) > 10 / AREA_MULTIPLER) {
             rectangles.push_back(boundingBox);
         }
     }

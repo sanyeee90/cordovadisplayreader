@@ -55,7 +55,7 @@ int main_range() {
 
 int main(){
     //Mat box = imread("img/pfm20det.png");
-    Mat box = imread("img/IMG_1323.jpg");
+    Mat box = imread("img/DSC_0092.jpg");
     float result = readResultFromPFM(box);
     printf("result: %f\n", result);
     waitKey();

@@ -31,26 +31,34 @@ void preprocessImage() {
 }
 
 
+void preprocessImage(Mat& inputImage) {
+    Mat blurred;
+    GaussianBlur(inputImage, blurred, Size(0,0), 3);
+    addWeighted(inputImage, 1.5, blurred, -0.5, 0, inputImage);
+}
+
+Rect getInterestedRegionAroundTheIndicator(Rect& indicatorRect, const Size& originalImageSize) {
+    int interestedStartYPoint = indicatorRect.tl().y - indicatorRect.height * AREA_MULTIPLER;
+    int interestedHeight = indicatorRect.height * (AREA_MULTIPLER * 2 + 1);
+    return Rect(0, interestedStartYPoint, originalImageSize.width, interestedHeight);
+}
+
 
 float readResultFromPFM(Mat& input, const char* tessDataDir) {
 #ifdef DEBUG
     clock_t begin = clock();
 #endif
-    Mat blurred;
     Mat hsvImage;
     Mat gray;
     Mat filtered_gray;
     Mat inputImage = input.clone();
-    cv::Size s = inputImage.size();
+    cv::Size originalSize = inputImage.size();
     
-    if (isResizingRequired(s)) {
-        resize(inputImage, inputImage, calculateOptimalSize(s));
+    if (isResizingRequired(originalSize)) {
+        resize(inputImage, inputImage, calculateOptimalSize(originalSize));
     }
 
-    
-    GaussianBlur(inputImage, blurred, Size(0,0), 3);
-    addWeighted(inputImage, 1.5, blurred, -0.5, 0, inputImage);
-    
+    preprocessImage(inputImage);
     cvtColor(inputImage, hsvImage, COLOR_BGR2HSV);
     cvtColor(inputImage, gray, COLOR_RGB2GRAY);
     
@@ -61,14 +69,13 @@ float readResultFromPFM(Mat& input, const char* tessDataDir) {
     // ---- INDICATOR, NUMBER_PLATE END ---- //
     
     
-    Rect roiAroundIndicator(0, indicatorRect.tl().y-indicatorRect.height*2, inputImage.size().width, indicatorRect.height*5);
+    Rect roiAroundIndicator(getInterestedRegionAroundTheIndicator(indicatorRect, inputImage.size()));
     Mat interestedImageAroundIndicatorHSV = hsvImage(roiAroundIndicator);
     Mat interestedImageAroundIndicatorGray = gray(roiAroundIndicator);
     Point updatedIndicatorPosition(0,roiAroundIndicator.height/2);
     
     
-    Mat interestedAreaNumberPlateMat(interestedImageAroundIndicatorHSV.size(), CV_8U);
-    
+    Mat interestedAreaNumberPlateMat = cv::Mat::zeros(interestedImageAroundIndicatorHSV.size(), CV_8U);
     Rect interestedNumberPlate = extractNumberPlate(interestedImageAroundIndicatorHSV, interestedAreaNumberPlateMat);
 
     // ---- NUMBER FIELDS START ---- //
@@ -77,23 +84,18 @@ float readResultFromPFM(Mat& input, const char* tessDataDir) {
     vector<Rect> boundRect;
     extractNumberFields(filtered_gray, interestedNumberPlate, boundRect);
     transformCoordinatesWithBaseline(interestedNumberPlate, boundRect);
-    imshow("orig", interestedImageAroundIndicatorHSV);
     
     circle(inputImage, indicatorPosition, 5, Scalar(0,255,0));
     
     bitwise_not(filtered_gray, filtered_gray);
     // ---- NUMBERS END ---- //
-#ifdef DEBUG
-    imshow("filtered_gray.png", filtered_gray);
-#endif
+
     // BOUNDARY OF NUMBERS //
     vector<vector<Point> > contours;
     vector<Vec4i> hierarchy;
     // BOUNDARY OF NUMBERS END //
     /// Approximate contours to polygons + get bounding rects and circles
-#ifdef DEBUG
-    imshow("filtered_gray", filtered_gray);
-#endif
+
     vector<pair<Point, int> > pointsWithNumbers;
     if (boundRect.empty()) {
         return NUMBERS_EMPTY_RESULT;
@@ -112,7 +114,6 @@ float readResultFromPFM(Mat& input, const char* tessDataDir) {
         pointsWithNumbers.push_back(pair<Point,int>(calculateCenterOfRectangle(boundRect[i]), number));
     }
 #ifdef DEBUG
-    imshow("thresh_grey", inputImage);
     clock_t end = clock();
     double elapsed_secs = double(end - begin) / CLOCKS_PER_SEC;
     cout << "elapsed time: " << elapsed_secs;

@@ -24,6 +24,8 @@ static const float NUMBER_FIELD_EXTRA_PERCENT = 0.05f;
 static const int OPTIMAL_IMAGE_SIZE = 1280;
 static const int NUMBERS_EMPTY_RESULT = -200;
 
+static const int AREA_MULTIPLER = 2;
+
 //static const Matx<uint, 3, 3> INDICATOR_ERODE_KERNEL(0,1,0,1,1,1,0,1,0);
 
 #endif
