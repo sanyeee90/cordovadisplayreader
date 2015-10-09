@@ -12,4 +12,5 @@
     <feature name="StatusBar">
         <param name="ios-package" value="CDVStatusBar" onload="true" />
     </feature>
+    <preference name="DisallowOverscroll" value="true"/>
 </widget>

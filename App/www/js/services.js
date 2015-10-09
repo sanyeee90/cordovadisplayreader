@@ -33,7 +33,7 @@ angular.module('dispreader.services', [])
     }
   }
 }])
-.factory('CameraSrv', ['$q', function($q) {
+.factory('CameraSrvStub', ['$q', function($q) {
 
   return {
     getPicture: function(options) {

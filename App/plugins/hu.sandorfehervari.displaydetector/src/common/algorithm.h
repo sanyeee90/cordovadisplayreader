@@ -9,12 +9,30 @@
 #ifndef __Csucsaramlasmero__algorithm__
 #define __Csucsaramlasmero__algorithm__
 
-#include <stdio.h>
 #include "opencv2/core/core.hpp"
 
 using namespace cv;
+using namespace std;
 
-float readResultFromPFM(Mat& inputImage, const char* tessDataDir = "");
+class PFMResultDetector {
+private:
+    Mat inputImage;
+    Mat grayImage;
+    Mat hsvImage;
+    Mat filtered_gray;
+    vector<cv::Rect> boundRect;
+    Rect indicatorRect;
+    vector<pair<cv::Point, int> > pointsWithNumbers;
+    
+    const char* tessDataDir;
+    
+    void detectIndicatorOnOriginalImage();
+    void detectNumberFields();
+    void readNumbersFromImage();
+public:
+    PFMResultDetector(Mat& input, const char* tessDataDir = "");
+    float runAlgorithm();
+};
 
 
 #endif /* defined(__Csucsaramlasmero__algorithm__) */

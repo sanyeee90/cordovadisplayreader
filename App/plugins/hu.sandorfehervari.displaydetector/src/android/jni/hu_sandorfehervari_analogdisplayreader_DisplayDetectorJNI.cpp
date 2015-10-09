@@ -37,9 +37,9 @@ JNIEXPORT jfloat JNICALL Java_hu_sandorfehervari_analogdisplayreader_DisplayDete
         default:
             break;
       }
-
-
-      float retValue = readResultFromPFM(imageToProcess, tessdataDir);
+      PFMResultDetector pfm(imageToProcess, tessdataDir);
+      
+      float retValue = pfm.runAlgorithm();
 
       return retValue;
   }

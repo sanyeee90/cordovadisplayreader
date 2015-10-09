@@ -42,6 +42,7 @@
             <header-file src="src/common/constants.h" />
             <header-file src="src/common/utils.h" />
             <source-file src="src/common/utils.cpp" />
+            <header-file src="src/common/EmptyImageException.h" />
             <header-file src="src/ios/DetectorAlgorithm.h" />
             <header-file src="src/ios/DisplayDetector.h" />
             <source-file src="src/ios/DisplayDetector.m" />
@@ -50,7 +51,6 @@
             <source-file src="src/ios/OpenCVUtils.mm" />
             <header-file src="src/ios/ScaleDetector.h" />
             <source-file src="src/ios/ScaleDetector.mm" />            
-
             <framework src="tessdata" custom="true"/>
 
         </platform>

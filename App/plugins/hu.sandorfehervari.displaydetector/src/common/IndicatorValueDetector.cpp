@@ -8,12 +8,17 @@
 
 #include "IndicatorValueDetector.h"
 #include "utils.h"
+#include "EmptyImageException.h"
+#include "constants.h"
 using namespace std;
 using namespace cv;
 
 
 
 float calculateIndicatorPosition(vector<pair<Point, int> >& numberPoints, Point& indicatorLocation) {
+    if(numberPoints.empty()) {
+        throw AlgorithmException(ERROR_FAILED_TO_DETECT_NUMBER_FIELDS_DIGIT);
+    }
     sort(numberPoints.begin(), numberPoints.end(), compareByHeight);
     int selectedIndex = 0;
     for (int i = 0; i < numberPoints.size()-1; i++) {

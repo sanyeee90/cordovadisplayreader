@@ -27,6 +27,10 @@ OCREngine::OCREngine(Mat& inputImage, const char* tessDataDict) {
     ocrEngine->tesseract.image = [OpenCVUtils UIImageFromCVMat:inputImage];
 }
 
+OCREngine::~OCREngine() {
+    
+}
+
 int OCREngine::getNumberFromImage(const cv::Rect &roi) {
     CGPoint point;
     point.x = roi.x;

@@ -19,3 +19,8 @@ void transformCoordinatesWithBaseline(const cv::Rect baseline, vector<cv::Rect>&
 void extractNumberFields(cv::Mat& grayInputImage, cv::Rect& numberPlatePlacement, vector<cv::Rect>& boundingBoxes);
 void parseHoughCircles(Mat& input, Mat& output);
 #endif /* defined(__Csucsaramlasmero__element_extraction__) */
+
+#ifdef TEST
+double calculatePercentage(double value, double baseline);
+void mergeOverlappingBoxes(const std::vector<cv::Rect> &inputBoxes, cv::Mat &image, std::vector<cv::Rect> &outputBoxes);
+#endif

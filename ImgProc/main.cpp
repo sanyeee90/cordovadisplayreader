@@ -55,12 +55,13 @@ int main_range() {
 
 int main(){
     //Mat box = imread("img/pfm20det.png");
-    Mat box = imread("img/DSC_0092.jpg");
-    float result = readResultFromPFM(box);
+    Mat box = imread("img/IMG_1535.jpg");
+    
+    PFMResultDetector pfm(box);
+    
+    float result = pfm.runAlgorithm();
     printf("result: %f\n", result);
     waitKey();
     return 0;
-
-
 }
 

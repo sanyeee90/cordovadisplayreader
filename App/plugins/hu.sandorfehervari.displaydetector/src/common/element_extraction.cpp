@@ -8,11 +8,13 @@
 
 #include <opencv2/imgproc/imgproc.hpp>
 #include <opencv2/features2d/features2d.hpp>
+#include "opencv2/highgui/highgui.hpp"
 
 #include "element_extraction.h"
 #include "colour_based_extractor.h"
 #include "constants.h"
 #include "utils.h"
+#include "EmptyImageException.h"
 
 using namespace cv;
 using namespace std;
@@ -23,6 +25,10 @@ Point calculateRectangleCenter(const Rect& rectangle) {
 }
 
 Rect extractIndicator(Mat& hsvInputImage) {
+    if (hsvInputImage.empty()) {
+        throw AlgorithmException(ERROR_EMPTY_IMAGE);
+    }
+    
     Mat extracted, lower_red, upper_red, lines;
     ColourBasedExtractor lowerRed(Scalar(0,140,100), Scalar(3,255,230));
     lowerRed.ExtractColour(hsvInputImage, lower_red);
@@ -36,18 +42,27 @@ Rect extractIndicator(Mat& hsvInputImage) {
 
     cv::Mat b = (cv::Mat_<uchar>(3,3) << 0,1,0,1,1,1,0,1,1);
     erode(extracted, extracted, b, Point(-1,-1), 3);
-
-    return findBiggestBlob(extracted);
+    Rect indicator = findBiggestBlob(extracted);
+    if (indicator.area() == 0) {
+        throw AlgorithmException(ERROR_FAILED_TO_DETECT_INDICATOR);
+    }
+    return indicator;
 }
 
 
 Rect extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst) {
+    if (hsvInputImage.empty()) {
+        throw AlgorithmException(ERROR_EMPTY_IMAGE);
+    }
     Mat extractedColor(hsvInputImage.size(), CV_8U);
     ColourBasedExtractor colourExtractor(YELLOW_RANGE_START, YELLOW_RANGE_END);
     colourExtractor.ExtractColour(hsvInputImage, extractedColor);
     
     Rect plate = findBiggestBlob(extractedColor, true);
     rectangle( dst, plate.tl(), plate.br(), Scalar(255), CV_FILLED, 8, 0 );
+    if (plate.area() == 0) {
+        throw AlgorithmException(ERROR_FAILED_TO_DETECT_NUMNER_PLATE);
+    }
     return plate;
 }
 
@@ -55,10 +70,16 @@ double calculatePercentage(double value, double baseline) {
     return value / baseline * 100.0f;
 }
 
-void mergeOverlappingBoxes(std::vector<cv::Rect> &inputBoxes, cv::Mat &image, std::vector<cv::Rect> &outputBoxes)
+void mergeOverlappingBoxes(const std::vector<cv::Rect> &inputBoxes, cv::Mat &image, std::vector<cv::Rect> &outputBoxes)
 {
+    if (image.empty()) {
+        throw AlgorithmException(ERROR_EMPTY_IMAGE);
+    } else if (inputBoxes.empty()) {
+        return;
+    }
+    
     cv::Mat mask = cv::Mat::zeros(image.size(), CV_8UC1); // Mask of original image
-    cv::Size scaleFactor(5,0); // To expand rectangles, i.e. increase sensitivity to nearby rectangles. Doesn't have to be (10,10)--can be anything
+    cv::Size scaleFactor(7,0); // To expand rectangles, i.e. increase sensitivity to nearby rectangles. Doesn't have to be (10,10)--can be anything
     for (int i = 0; i < inputBoxes.size(); i++)
     {
         cv::Rect box = inputBoxes.at(i) + scaleFactor;
@@ -77,33 +98,41 @@ void mergeOverlappingBoxes(std::vector<cv::Rect> &inputBoxes, cv::Mat &image, st
 
 void transformCoordinatesWithBaseline(const cv::Rect baseline, vector<cv::Rect>& boundingBoxes) {
     for (int i=0; i<boundingBoxes.size(); i++) {
-        Rect boundingBox = boundingBoxes[i];
-        boundingBox.x += baseline.x;
-        boundingBox.y += baseline.y;
-        boundingBoxes[i] = boundingBox;
+        boundingBoxes[i].x += baseline.x;
+        boundingBoxes[i].y += baseline.y;
     }
 }
 
 void extractNumberFields(cv::Mat& grayInputImage, cv::Rect& numberPlatePlacement, vector<cv::Rect>& boundingBoxes) {
+    if (grayInputImage.empty() || numberPlatePlacement.area() == 0) {
+        throw AlgorithmException(ERROR_EMPTY_IMAGE);
+    }
     Mat output;
     cv::Mat roi = grayInputImage(numberPlatePlacement);
     cv::Mat mask = cv::Mat::zeros(roi.size(), CV_8UC1);
-    threshold(roi, output, 90, 255, THRESH_BINARY_INV);
+    //threshold(roi, output, 90, 255, THRESH_BINARY_INV);
+    adaptiveThreshold(roi, output, 255, ADAPTIVE_THRESH_GAUSSIAN_C, THRESH_BINARY_INV, 11, 13);
     vector<vector <Point> > regions;
     vector<Rect> rectangles;
     findContours(output, regions, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
     for (int i=0; i<regions.size(); i++) {
         Rect boundingBox = boundingRect(regions[i]);
+        rectangle(grayInputImage, boundingBox.tl(), boundingBox.br(), Scalar(255));
         printf("%f\n", calculatePercentage(boundingBox.height, grayInputImage.size().height));
-        if (calculatePercentage(boundingBox.height, grayInputImage.size().height) > 10 / AREA_MULTIPLER) {
+        float percentage = calculatePercentage(boundingBox.height, grayInputImage.size().height);
+        if (percentage > 10 / AREA_MULTIPLER) {
             rectangles.push_back(boundingBox);
         }
+    }
+    if (rectangles.empty()) {
+        throw AlgorithmException(ERROR_FAILED_TO_DETECT_NUMBER_FIELDS);
     }
     mergeOverlappingBoxes(rectangles, mask, boundingBoxes);
     output.release();
     mask.release();
 }
 
+/*
 void parseHoughCircles(Mat& input, Mat& mask) {
     vector<Vec3f> circles;
     Mat coloredInput;
@@ -152,3 +181,4 @@ void parseHoughCircles(Mat& input, Mat& mask) {
     }
     
 }
+*/
