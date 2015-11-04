@@ -69,6 +69,7 @@ var App = angular.module("dispreader", ["ionic", "dispreader.services"])
                 function (err) {
                     $scope.processError=true;
                     console.log('Error' + err);
+                    
                 });
           }, function(err) {
             $scope.processError=true;

@@ -55,7 +55,7 @@ int main_range() {
 
 int main(){
     //Mat box = imread("img/pfm20det.png");
-    Mat box = imread("img/IMG_1535.jpg");
+    Mat box = imread("img/IMG_1322.jpg");
     
     PFMResultDetector pfm(box);
     

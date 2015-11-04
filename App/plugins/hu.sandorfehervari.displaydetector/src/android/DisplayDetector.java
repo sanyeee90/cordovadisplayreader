@@ -21,10 +21,8 @@ package hu.sandorfehervari.analogdisplayreader;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.res.AssetManager;
 import android.media.ExifInterface;
 import android.net.Uri;
-import android.os.Environment;
 import android.util.Log;
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaInterface;
@@ -35,7 +33,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.*;
-import java.net.URI;
 
 public class DisplayDetector extends CordovaPlugin
 {
@@ -140,7 +137,7 @@ public class DisplayDetector extends CordovaPlugin
 
         if (action.equals("processImage")) {
             Log.i(TAG, args.toString());
-            String fileName = args.getString(1);
+            String fileName = args.getString(0);
             File fileToProcess = null;
             if (tessDataFile.isEmpty()) {
                 callbackContext.error("failed initialize the detector plugin");
@@ -153,17 +150,18 @@ public class DisplayDetector extends CordovaPlugin
                     imageOrientation = getOrientation(normalizedFilePath);
                 }
 
-
                 fileToProcess = new File(normalizedFilePath);
                 if (!fileToProcess.exists()) {
                     callbackContext.error("failed to load the input image.");
                     return true;
                 }
-                JSONObject result = new JSONObject();
-                result.put("value", new DisplayDetectorJNI().processImage(args.getString(0), tessDataFile, imageOrientation));
+                JSONObject result = getResultOrErrorCause(fileName,imageOrientation);
 
-                result.put("success", true);
-                callbackContext.success(result);
+                if (result.getBoolean("success")) {
+                    callbackContext.success(result);
+                } else {
+                    callbackContext.error(result);
+                }
             } catch (AssertionError ex) {
                 callbackContext.error("the filename was null!");
                 return true;
@@ -172,6 +170,20 @@ public class DisplayDetector extends CordovaPlugin
         } else {
             return false;
         }
+    }
+
+    private JSONObject getResultOrErrorCause(String imageFile, int imageOrientation) throws JSONException {
+        float imageProcessorResult = new DisplayDetectorJNI().processImage(imageFile, tessDataFile, imageOrientation);
+        JSONObject pluginResult = new JSONObject();
+        if (imageProcessorResult >= 0) {
+            pluginResult.put("success", true);
+            pluginResult.put("value", imageProcessorResult);
+        } else {
+            ErrorCause errorCause = ErrorCause.getErrorCauseByErrorCode(String.valueOf(imageProcessorResult));
+            pluginResult.put("success", false);
+            pluginResult.put("cause", errorCause);
+        }
+        return pluginResult;
     }
 
     private String getNormalizedFilePath(String inputFilePath) {
@@ -184,17 +196,15 @@ public class DisplayDetector extends CordovaPlugin
     }
 
     private int getOrientation(String inputImage) {
-        ExifInterface exif = null;
+        int orientation = 0;
         try {
-            exif = new ExifInterface(inputImage);
+            ExifInterface exif = new ExifInterface(inputImage);
+            orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
+                    ExifInterface.ORIENTATION_UNDEFINED);
         } catch (IOException e) {
             Log.e(TAG, "Failed to red exif information from image.");
             e.printStackTrace();
         }
-        int orientation = exif.getAttributeInt(ExifInterface.TAG_ORIENTATION,
-                ExifInterface.ORIENTATION_UNDEFINED);
         return orientation;
     }
-
-
 }

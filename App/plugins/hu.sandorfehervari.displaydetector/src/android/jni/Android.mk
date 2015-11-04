@@ -41,7 +41,6 @@ LOCAL_MODULE    := DisplayReaderJNI
 LOCAL_SRC_FILES := hu_sandorfehervari_analogdisplayreader_DisplayDetectorJNI.cpp \
 				   OCREngine.cpp \
 				   $(COMMON_FILE_CPP_PATH)/algorithm.cpp \
-				   $(COMMON_FILE_CPP_PATH)/colour_based_extractor.cpp \
 				   $(COMMON_FILE_CPP_PATH)/element_extraction.cpp \
 				   $(COMMON_FILE_CPP_PATH)/IndicatorValueDetector.cpp \
 				   $(COMMON_FILE_CPP_PATH)/utils.cpp

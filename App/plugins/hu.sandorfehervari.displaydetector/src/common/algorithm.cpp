@@ -24,6 +24,7 @@ using namespace std;
 
 Rect getInterestedRegionAroundTheIndicator(Rect& indicatorRect, const Size& originalImageSize) {
     int interestedStartYPoint = indicatorRect.tl().y - indicatorRect.height * AREA_MULTIPLER;
+    interestedStartYPoint = interestedStartYPoint > 0 ? interestedStartYPoint : 0;
     int maximumHeightSupportedByImage = originalImageSize.height - interestedStartYPoint;
     int interestedHeight = indicatorRect.height * (AREA_MULTIPLER * 2 + 1);
     if (maximumHeightSupportedByImage < interestedHeight) {
@@ -50,6 +51,7 @@ void PFMResultDetector::detectIndicatorOnOriginalImage() {
     indicatorRect.y = indicatorRect.y-interestedRegion.tl().y;
     hsvImage = hsvImage(interestedRegion);
     inputImage = inputImage(interestedRegion);
+    //imwrite("extracted", inputImage);
     cvtColor(inputImage, grayImage, COLOR_BGR2GRAY);
 }
 
@@ -80,12 +82,12 @@ void PFMResultDetector::readNumbersFromImage() {
 float PFMResultDetector::runAlgorithm() {
     try {
         detectIndicatorOnOriginalImage();
+
         detectNumberFields();
+        //imshow("hsvimage", hsvImage);
+        //imshow("indicatorOnOriginal", filtered_gray);
         readNumbersFromImage();
-        rectangle(inputImage, indicatorRect, Scalar(255,0,0));
         Point updatedIndicatorPosition = calculateCenterOfRectangle(indicatorRect);
-        circle(inputImage, updatedIndicatorPosition, 10, Scalar(255,255,0));
-        imshow("inputimage", inputImage);
         float result = calculateIndicatorPosition(pointsWithNumbers, updatedIndicatorPosition);
         if (result < 0) {
             return ERROR_INVALID_RESULT;

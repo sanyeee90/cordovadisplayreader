@@ -62,6 +62,7 @@
             </config-file>
 
             <source-file src="src/android/DisplayDetector.java" target-dir="src/hu/sandorfehervari/analogdisplayreader" />
+            <source-file src="src/android/ErrorCause.java" target-dir="src/hu/sandorfehervari/analogdisplayreader" />
             <source-file src="src/android/DisplayDetectorJNI.java" target-dir="src/hu/sandorfehervari/analogdisplayreader" />
 
             <source-file src="src/android/libs/armeabi/libDisplayReaderJNI.so" target-dir="libs/armeabi"/>

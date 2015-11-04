@@ -36,6 +36,9 @@ int OCREngine::getNumberFromImage(const Rect& roi) {
     Mat imgToDetect = this->inputImage->operator()(roi);
     ocrEngine->tesseractOCR->TesseractRect( imgToDetect.data, 1, imgToDetect.step1(), 0, 0, imgToDetect.cols, imgToDetect.rows);
     char* out = ocrEngine->tesseractOCR->GetUTF8Text();
-    sscanf(out, "%d", &number);
+    if (out != nullptr) {
+        sscanf(out, "%d", &number);
+    }
+
     return number;
 }

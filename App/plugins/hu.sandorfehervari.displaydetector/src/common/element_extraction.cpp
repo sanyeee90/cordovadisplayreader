@@ -11,7 +11,6 @@
 #include "opencv2/highgui/highgui.hpp"
 
 #include "element_extraction.h"
-#include "colour_based_extractor.h"
 #include "constants.h"
 #include "utils.h"
 #include "EmptyImageException.h"
@@ -30,10 +29,8 @@ Rect extractIndicator(Mat& hsvInputImage) {
     }
     
     Mat extracted, lower_red, upper_red, lines;
-    ColourBasedExtractor lowerRed(Scalar(0,140,100), Scalar(3,255,230));
-    lowerRed.ExtractColour(hsvInputImage, lower_red);
-    ColourBasedExtractor upperRed(Scalar(168,140,100), Scalar(180,255,255));
-    upperRed.ExtractColour(hsvInputImage, upper_red);
+    inRange(hsvInputImage, Scalar(0,140,100), Scalar(6,255,230), lower_red);
+    inRange(hsvInputImage, Scalar(168,140,100), Scalar(180,255,255), upper_red);
     bitwise_or(lower_red, upper_red, extracted);
     lower_red.release();
     upper_red.release();
@@ -55,13 +52,12 @@ Rect extractNumberPlate(cv::Mat& hsvInputImage, cv::Mat& dst) {
         throw AlgorithmException(ERROR_EMPTY_IMAGE);
     }
     Mat extractedColor(hsvInputImage.size(), CV_8U);
-    ColourBasedExtractor colourExtractor(YELLOW_RANGE_START, YELLOW_RANGE_END);
-    colourExtractor.ExtractColour(hsvInputImage, extractedColor);
+    inRange(hsvInputImage, YELLOW_RANGE_START, YELLOW_RANGE_END, extractedColor);
     
     Rect plate = findBiggestBlob(extractedColor, true);
     rectangle( dst, plate.tl(), plate.br(), Scalar(255), CV_FILLED, 8, 0 );
     if (plate.area() == 0) {
-        throw AlgorithmException(ERROR_FAILED_TO_DETECT_NUMNER_PLATE);
+        throw AlgorithmException(ERROR_FAILED_TO_DETECT_NUMBER_PLATE);
     }
     return plate;
 }
@@ -117,7 +113,7 @@ void extractNumberFields(cv::Mat& grayInputImage, cv::Rect& numberPlatePlacement
     findContours(output, regions, CV_RETR_EXTERNAL, CV_CHAIN_APPROX_SIMPLE);
     for (int i=0; i<regions.size(); i++) {
         Rect boundingBox = boundingRect(regions[i]);
-        rectangle(grayInputImage, boundingBox.tl(), boundingBox.br(), Scalar(255));
+        //rectangle(grayInputImage, boundingBox.tl(), boundingBox.br(), Scalar(255));
         printf("%f\n", calculatePercentage(boundingBox.height, grayInputImage.size().height));
         float percentage = calculatePercentage(boundingBox.height, grayInputImage.size().height);
         if (percentage > 10 / AREA_MULTIPLER) {
