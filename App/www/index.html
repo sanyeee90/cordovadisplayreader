@@ -25,25 +25,37 @@
         <!-- WARNING: for iOS 7, remove the width=device-width and height=device-height attributes. See https://issues.apache.org/jira/browse/CB-4323 -->
         <meta name="viewport" content="user-scalable=no, initial-scale=1, maximum-scale=1, minimum-scale=1, width=device-width, height=device-height, target-densitydpi=device-dpi" />
         <link rel="stylesheet" type="text/css" href="lib/css/ionic.css" />
+        <link rel="stylesheet" type="text/css" href="css/index.css" />
         <title>AnalogDisplayReader</title>
+        <script type="text/javascript" src="lib/js/jquery-1.11.2.min.js"></script>
         <script type="text/javascript" src="lib/js/ionic.bundle.js"></script>
         <script type="text/javascript" src="cordova.js"></script>
         <script type="text/javascript" src="js/services.js"></script>
         <script type="text/javascript" src="js/index.js"></script>
-
     </head>
     <body ng-app="dispreader" ng-controller="AppCtrl">
         <ion-header-bar class="bar-positive">
                 <h1 class="title">Display Reader</h1>
         </ion-header-bar>
+        <div id="errorMessage" class="bar bar-loading bar-assertive" data-slide-toggle="processError" data-slide-toggle-duration="1000">
+            <h3 class="title">Hiba: probléma merült fel a detektálás során</h3>
+        </div>
         <ion-content class="has-header" scroll="false" padding="true">
-                <button ng-click="getPhoto()" class="button button-block button-positive">Open camera</button>
-                <img ng-src="{{lastPhoto}}" style="max-width: 90%">
-                <a ng-href="{{lastPhoto}}">{{lastPhoto}}</a>
+            <div ng-if="lastPhoto == undefined">
+                A felvételhez nyomja meg a lenti kamera gombot!
+            </div>
+            <div ng-if="resultValue != undefined" class="row, text-center">
+                <h2>{{resultValue}}</h2>
+            </div>
+            <div class="row contentArea">
+                <div class="col last-image" style="background-image: url('{{lastPhoto}}')">
 
+                </div>
+
+            </div>
         </ion-content>
-        <ion-footer-bar>
-
-        </ion-footer-bar>
+        <div class="fixed-outside">
+            <button ng-click="getPhoto()" class="button button-circle button-positive icon ion-camera"></button>
+        </div>
     </body>
 </html>

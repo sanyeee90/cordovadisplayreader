@@ -19,9 +19,10 @@
 
 var App = angular.module("dispreader", ["ionic", "dispreader.services"])
 .config(function($compileProvider){
-      $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel):/);
+        $compileProvider.imgSrcSanitizationWhitelist(/^\s*(https?|ftp|mailto|file|tel):/);
 })
 .run(function($ionicPlatform) {
+
   $ionicPlatform.ready(function() {
     if(window.StatusBar) {
       StatusBar.overlaysWebView(false); //Turns off web view overlay.
@@ -30,42 +31,62 @@ var App = angular.module("dispreader", ["ionic", "dispreader.services"])
     }
   });
 })
-.controller("AppCtrl", function ($scope, CameraSrv){
-    var path = "www/img/2.PNG"
+.directive('slideToggle', function() {
+    return {
+        restrict: 'A',
+        scope:{
+            isOpen: "=slideToggle" // 'data-slide-toggle' in our html
+        },
+        link: function(scope, element, attr) {
+            var slideDuration = parseInt(attr.slideToggleDuration, 10) || 200;
+
+            // Watch for when the value bound to isOpen changes
+            // When it changes trigger a slideToggle
+            scope.$watch('isOpen', function(newIsOpenVal, oldIsOpenVal){
+                if(newIsOpenVal == true){
+                    element.stop().slideDown(slideDuration);
+                } else {
+                    element.stop().slideUp(slideDuration);
+                }
+            });
+
+        }
+    };
+})
+.controller("AppCtrl", function ($scope, CameraSrv, DisplayReaderService){
+
       $scope.getPhoto = function() {
-cordova.exec(
-                                              // Register the callback handler
-                                              function callback(data) {
-                                              console.log('Wrote date ' + data);
-                                              $scope.lastPhoto = data;
-                                              },
-                                              // Register the errorHandler
-                                              function errorHandler(err) {
-                                              console.log('Error' + err);
-                                              },
-                                              // Define what class to route messages to
-                                              'DisplayDetector',
-                                              // Execute this method on the above class
-                                              'cordovaGetScaleAngle',
-                                              // An array containing one String (our newly created Date String).
-                                              [ path ]
-                                              );
+          var options = {
+              quality: 75,
+              saveToPhotoAlbum: false,
+              correctOrientation: true
+          };
 
-
-       /*   CameraSrv.getPicture().then(function(imageURI) {
+          CameraSrv.getPicture(options).then(function(imageURI) {
             $scope.lastPhoto = imageURI;
+            DisplayReaderService.processImage(imageURI).then(
+                function (data) {
+                    console.log($scope);
+                    $scope.resultValue = data.value;
+                    $scope.processError=false;
+                    console.log('Wrote data ' + data.value);
 
+                },
+                function (err) {
+                    $scope.processError=true;
+                    console.log('Error' + err);
+                    
+                });
           }, function(err) {
-            console.err(err);
+            $scope.processError=true;
+            console.log(err);
           }, {
             quality: 75,
             targetWidth: 320,
             targetHeight: 320,
             saveToPhotoAlbum: false,
             destinationType : Camera.DestinationType.DATA_URL
-          });*/
+          });
         };
     });
-
-
-//document.addEventListener('deviceready', onDeviceReady, false);
+document.addEventListener('deviceready', onDeviceReady, false);

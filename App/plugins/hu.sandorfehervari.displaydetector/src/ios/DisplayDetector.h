@@ -10,10 +10,10 @@
 
 @interface DisplayDetector : CDVPlugin
 
-- (void) cordovaGetScaleAngle:(CDVInvokedUrlCommand *)command;
+- (void) processImage:(CDVInvokedUrlCommand *)command;
 
 #pragma mark - Util_methods
 
--(float) getScaleAngle:(NSString*) imgURL;
+-(float) getScaleAngle:(UIImage*) imgURL;
 
 @end

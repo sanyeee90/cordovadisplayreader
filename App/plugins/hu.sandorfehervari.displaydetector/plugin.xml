@@ -15,6 +15,7 @@
                 </feature>
             </config-file>
             <framework src="frameworks/opencv2.framework" custom="true"/>
+            <framework src="frameworks/TesseractOCR.framework" custom="true"/>
             <framework src="Accelerate.framework"/>
             <framework src="AssetsLibrary.framework"/>
 
@@ -29,20 +30,62 @@
 
             <framework src="libstdc++.dylib"/>
 
-            <header-file src="src/ios/AngleDetector.h" />
-            <source-file src="src/ios/AngleDetector.cpp" />
+            <header-file src="src/common/algorithm.h" />
+            <source-file src="src/common/algorithm.cpp" />            
+            <header-file src="src/common/colour_based_extractor.h" />
+            <source-file src="src/common/colour_based_extractor.cpp" />
+            <header-file src="src/common/element_extraction.h" />
+            <source-file src="src/common/element_extraction.cpp" />
+            <header-file src="src/common/IndicatorValueDetector.h" />
+            <source-file src="src/common/IndicatorValueDetector.cpp" />
+            <header-file src="src/common/OCREngine.h" />
+            <header-file src="src/common/constants.h" />
+            <header-file src="src/common/utils.h" />
+            <source-file src="src/common/utils.cpp" />
+            <header-file src="src/common/EmptyImageException.h" />
             <header-file src="src/ios/DetectorAlgorithm.h" />
-            <header-file src="src/ios/FrequencyDetector.h" />
-            <source-file src="src/ios/FrequencyDetector.cpp" />
             <header-file src="src/ios/DisplayDetector.h" />
             <source-file src="src/ios/DisplayDetector.m" />
-            <header-file src="src/ios/line.h" />
-            <source-file src="src/ios/line.cpp" />
-            <header-file src="src/ios/Preprocess.h" />
-            <source-file src="src/ios/Preprocess.cpp" />
+            <source-file src="src/ios/OCREngine.mm" />
+            <header-file src="src/ios/OpenCVUtils.h" />
+            <source-file src="src/ios/OpenCVUtils.mm" />
             <header-file src="src/ios/ScaleDetector.h" />
-            <source-file src="src/ios/ScaleDetector.mm" />
-            <header-file src="src/ios/Yin.h" />
-            <source-file src="src/ios/Yin.c" />
+            <source-file src="src/ios/ScaleDetector.mm" />            
+            <framework src="tessdata" custom="true"/>
+
+        </platform>
+        <platform name="android">
+            <config-file target="res/xml/config.xml" parent="/*">
+                <feature name="DisplayDetector" >
+                    <param name="android-package" value="hu.sandorfehervari.analogdisplayreader.DisplayDetector"/>
+                </feature>
+            </config-file>
+
+            <source-file src="src/android/DisplayDetector.java" target-dir="src/hu/sandorfehervari/analogdisplayreader" />
+            <source-file src="src/android/ErrorCause.java" target-dir="src/hu/sandorfehervari/analogdisplayreader" />
+            <source-file src="src/android/DisplayDetectorJNI.java" target-dir="src/hu/sandorfehervari/analogdisplayreader" />
+
+            <source-file src="src/android/libs/armeabi/libDisplayReaderJNI.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/liblept.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libopencv_info.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libopencv_java.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi/libtess.so" target-dir="libs/armeabi"/>
+            <source-file src="src/android/libs/armeabi-v7a/libDisplayReaderJNI.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/liblept.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libopencv_info.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libopencv_java.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/armeabi-v7a/libtess.so" target-dir="libs/armeabi-v7a"/>
+            <source-file src="src/android/libs/mips/libDisplayReaderJNI.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/liblept.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libopencv_info.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libopencv_java.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/mips/libtess.so" target-dir="libs/mips"/>
+            <source-file src="src/android/libs/x86/libDisplayReaderJNI.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/liblept.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libopencv_info.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libopencv_java.so" target-dir="libs/x86"/>
+            <source-file src="src/android/libs/x86/libtess.so" target-dir="libs/x86"/>
+
+            <source-file src="tessdata/eng.traineddata" target-dir="assets/tessdata"/>
         </platform>
     </plugin>

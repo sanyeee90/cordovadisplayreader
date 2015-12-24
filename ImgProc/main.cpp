@@ -2,115 +2,66 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <opencv2/features2d/features2d.hpp>
 #include "opencv2/highgui/highgui.hpp"
+
+#include "element_extraction.h"
+#include "OCREngine.h"
+#include "utils.h"
+
+#include <tesseract/baseapi.h>
+
 #include <iostream>
-#include "preprocess.h"
-#include "eventhandler.h"
-#include "line.h"
-#include "autoruler.h"
-extern "C" {
-#include "Yin.h"
+#include "algorithm.h"
+
+int main_range() {
+    Mat box_amazon = imread("img/pfm20_amazon.jpg");
+    Mat box_straight = imread("img/pfm20_straight.png");
+    Mat box_shapred = imread("img/pfm20_sharped.png");
+    Mat box_lowres = imread("img/pfm20.png");
+    Mat box_straight_nonsharp = imread("img/pfm20det_straight.png");
+    
+    Mat box_amazon_hsv, box_straight_hsv,box_shapred_hsv,box_lowres_hsv,box_straight_nonsharp_hsv;
+    
+    
+    cvtColor(box_amazon, box_amazon_hsv, COLOR_BGR2HSV);
+    cvtColor(box_straight, box_straight_hsv, COLOR_BGR2HSV);
+    cvtColor(box_shapred, box_shapred_hsv, COLOR_BGR2HSV);
+    cvtColor(box_lowres, box_lowres_hsv, COLOR_BGR2HSV);
+    cvtColor(box_straight_nonsharp, box_straight_nonsharp_hsv, COLOR_BGR2HSV);
+    
+    Mat yellow_amazon(box_amazon.size(), CV_8U, cvScalar(0));
+    Mat straight(box_straight.size(), CV_8U, cvScalar(0));
+    Mat sharped(box_shapred.size(), CV_8U, cvScalar(0));
+    Mat lowres(box_lowres.size(), CV_8U, cvScalar(0));
+    Mat straight_nonsharp(box_straight_nonsharp.size(), CV_8U, cvScalar(0));
+    
+    extractNumberPlate(box_amazon_hsv, yellow_amazon);
+    extractNumberPlate(box_straight_hsv, straight);
+    extractNumberPlate(box_shapred_hsv, sharped);
+    extractNumberPlate(box_lowres_hsv, lowres);
+    extractNumberPlate(box_straight_nonsharp_hsv, straight_nonsharp);
+    Mat temp(straight.size(), CV_8U, cvScalar(0));
+    box_straight.copyTo(temp, straight);
+    imshow("amazonakurvaanyad", temp);
+    imshow("straight", straight);
+    imshow("sharped", sharped);
+    imshow("lowres", lowres);
+    imshow("straight_nonsharp", straight_nonsharp);
+    
+    waitKey(0);
+    return 0;
 }
 
-using namespace cv;
-using namespace std;
 
-void blobDetection(Mat,Mat);
-void preprocessImage(Mat& inputImage, Mat& processedImage);
-static EventHandler mouseHandler;
 
-void static mouseHandlerWrapper(int event, int x, int y, int flags, void *param) {
-	mouseHandler(event, x, y, flags, param);
-}
-
-void cropImage(Mat& input, Mat& output) {
-	Mat temp = input.clone();
-	//Mat roi2(temp, Rect(Point(255,159), Point(310,216)));
-	//Mat curr_imgT = roi2.clone();
-	temp.copyTo(output);
-	//output = curr_imgT;
-}
-
-int main(int argc, char** argv)
-{
-	const char* filename = argc >= 2 ? argv[1] : "img/2.png";
-	Mat Icol = imread(filename, IMREAD_COLOR);
-	Mat processed;
-	Mat result, resultconj;
+int main(){
+    //Mat box = imread("img/pfm20det.png");
+    Mat box = imread("img/IMG_1322.jpg");
     
-    //preprocessImage(Icol, processed);
-    cv::cvtColor(Icol, processed, COLOR_RGB2GRAY);
+    PFMResultDetector pfm(box);
     
-    imshow("processed", processed);
-    waitKey();
-    /*
-    
-     AutoRuler autoruler(Icol);
-     autoruler.generateImage();
-     
-     Mat** images = autoruler.getImageBlocks();
-     
-     for (int i = 0;i < autoruler.getSamplesPerWidth(); i++) {
-        for (int j = 0; j<autoruler.getSamplesPerHeight(); j++) {
-         cv:cvtColor(images[i][j], processed, COLOR_RGB2GRAY);
-         psdt(processed,result);
-         char string[10];
-         sprintf(string, "valami %d, %d", i, j);
-         imshow(string, result);
-        }
-     }*/
-    //gaussianWindow(processed, Point(20,50), 10, processed);
-    fourier(processed, processed, false);
+    float result = pfm.runAlgorithm();
+    printf("result: %f\n", result);
     waitKey();
     return 0;
-    
-	psdt(processed, result);
-	Mat stg;
-	float angle = getLineAngle(result, stg);
-	cout << angle << endl;
-
-    Point P1(result.cols / 2, result.rows / 2);
-    Line* generatedLine = new Line(angle, P1);
-    
-    vector<uchar> *values = new vector<uchar>(generatedLine->getImageData(processed));
-
-    int16_t *data = new int16_t[values->size()];
-    int i = 0;
-    for(vector<uchar>::iterator it = values->begin(); it != values->end();it++){
-        data[i]=(int16_t)*it;
-        cout<< data[i] << " ";
-        i++;
-    }
-
-    int buffer_length = 10;
-    Yin yin;
-    float pitch;
-
-    while (pitch < 10 ) {
-        Yin_init(&yin, buffer_length, 0.25);
-		pitch = Yin_getPitch(&yin, data);
-        cout<< "buffer_length: " << buffer_length << "pitch: " << pitch << endl;
-		buffer_length++;
-	}
-    
-	Mat colored;
-	cvtColor(processed, colored, COLOR_GRAY2BGR);
-    generatedLine->applyToImage(colored, Scalar(255,0,0));
-    generatedLine->applyScalePoints(colored, buffer_length-1);
-	imshow("processed", colored);
-	waitKey();
-
-	return 0;
-
 }
-
-void preprocessImage(Mat& inputImage, Mat& processedImage) {
-	Mat blurred, gray;
-    double minVal, maxVal;
-	cv::cvtColor(inputImage, gray, COLOR_RGB2GRAY);
-    bitwise_not(gray, gray);
-	GaussianBlur(gray, blurred, cv::Size(3,3), 3);
-    addWeighted(gray, 0.6, blurred, -0.5, 128, processedImage);
-}
-
-
 

@@ -10,6 +10,6 @@
 
 @protocol DetectorAlgorithm <NSObject>
 
--(float) applyDetectorAlgorithm:(NSString*) imgURL;
+-(float) applyDetectorAlgorithm:(UIImage*) image;
 
 @end
