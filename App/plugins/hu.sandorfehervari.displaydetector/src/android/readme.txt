@@ -1,0 +1,2 @@
+Az sdk mappa tartalmazza az OpenCV SDK-t Android rendszerre, segítségével lehetséges buildelni a natív függvénykönvtárakat. Ehhez ebben a mappában meg kell adni az ndk-build parancsot, melyet előzőleg telepíteni kell.
+Az Android NDK a következő címen érhető el: http://developer.android.com/ndk/downloads/index.html

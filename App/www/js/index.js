@@ -56,7 +56,13 @@ var App = angular.module("dispreader", ["ionic", "dispreader.services"])
 .controller("AppCtrl", function ($scope, CameraSrv, DisplayReaderService){
 
       $scope.getPhoto = function() {
-          CameraSrv.getPicture().then(function(imageURI) {
+          var options = {
+              quality: 75,
+              saveToPhotoAlbum: false,
+              correctOrientation: true
+          };
+
+          CameraSrv.getPicture(options).then(function(imageURI) {
             $scope.lastPhoto = imageURI;
             DisplayReaderService.processImage(imageURI).then(
                 function (data) {
